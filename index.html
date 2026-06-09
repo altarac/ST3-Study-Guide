@@ -809,11 +809,16 @@
       margin-bottom: 10px;
     }
     .inline-source-figure {
-      margin: 18px 0 24px;
-      max-width: 760px;
+      margin: 18px auto 24px;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .inline-source-figure img {
-      width: 100%;
+      max-width: 100%;
+      width: auto;
+      height: auto;
       display: block;
       border-radius: var(--radius-sm);
       background: #ffffff;
@@ -1076,12 +1081,17 @@
     }
 
     .quiz-question-figure {
-      margin: 0;
-      max-width: 680px;
+      margin: 0 auto;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .quiz-question-figure img {
-      width: 100%;
+      max-width: 100%;
+      width: auto;
+      height: auto;
       display: block;
       border-radius: var(--radius-sm);
       background: #ffffff;
@@ -1882,6 +1892,93 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* CREDITS MODAL */
+    .credits-modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+    .credits-content {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 85%;
+      overflow-y: auto;
+      box-shadow: var(--shadow-2xl);
+      animation: zoomAnim 0.3s ease-out;
+      position: relative;
+    }
+    .credits-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+    .credits-body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .credits-section-title {
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 8px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 4px;
+    }
+    .credits-list {
+      list-style-type: none;
+      padding-left: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .credits-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .credits-list li i {
+      color: var(--color-primary);
+      margin-top: 4px;
+      font-size: 12px;
+    }
+    .close-credits {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      color: var(--text-muted);
+      font-size: 28px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .close-credits:hover {
+      color: var(--text-primary);
+    }
   </style>
 </head>
 <body class="light-mode">
@@ -1916,11 +2013,12 @@
       <button class="mode-btn" id="mode-study" onclick="openStudyGuide()">
         <i class="fa-solid fa-book-open"></i> Study Guide
       </button>
-      <button class="mode-btn" id="mode-simulators" onclick="switchMode('simulators')">
-        <i class="fa-solid fa-flask"></i> Simulator Lab
-      </button>
+
       <button class="mode-btn" id="mode-flashcards" onclick="switchMode('flashcards')">
         <i class="fa-solid fa-clone"></i> Flashcards
+      </button>
+      <button class="mode-btn" id="mode-credits" onclick="openCreditsModal()">
+        <i class="fa-solid fa-users"></i> Document Credits
       </button>
     </div>
     
@@ -1967,7 +2065,7 @@
           <div class="dashboard-header-bg"><i class="fa-solid fa-graduation-cap"></i></div>
           <div class="dashboard-header-text">
             <h2>Welcome to your Science & Technology Study Hub!</h2>
-            <p>Master characteristic properties, biological systems, geological time, and mechanical engineering for Secondary 3. Track your progress, explore interactive laboratories, and flip flashcards to ace your course exams.</p>
+            <p>Master characteristic properties, biological systems, geological time, and mechanical engineering for Secondary 3. Track your progress, review key vocabulary flashcards, and practice unit quizzes to ace your course exams.</p>
           </div>
           <button class="continue-study-btn" onclick="continueStudying()">
             <i class="fa-solid fa-play"></i> Continue Study
@@ -1995,15 +2093,7 @@
             </div>
           </div>
           
-          <div class="stat-card">
-            <div class="stat-icon" style="background:rgba(245, 158, 11, 0.1);color:var(--color-warning);">
-              <i class="fa-solid fa-flask-vial"></i>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value" id="dash-sims-explored">0/9</div>
-              <div class="stat-name">Labs Explored</div>
-            </div>
-          </div>
+
           
           <div class="stat-card">
             <div class="stat-icon" style="background:rgba(139, 92, 246, 0.1);color:#8b5cf6;">
@@ -2138,9 +2228,7 @@
               <button class="action-card-btn quiz" onclick="scrollToQuiz()">
                 <i class="fa-solid fa-check-double"></i> Scroll to Quiz
               </button>
-              <button class="action-card-btn lab" id="study-launch-lab-btn" style="display:none;" onclick="launchActiveLab()">
-                <i class="fa-solid fa-flask"></i> Launch Related Lab
-              </button>
+
               <button class="action-card-btn" style="background:#64748b;" onclick="markActiveSectionRead()">
                 <i class="fa-solid fa-bookmark"></i> Mark as Studied
               </button>
@@ -2151,137 +2239,6 @@
               <div id="study-active-vocabulary" style="display:flex;flex-direction:column;gap:10px;font-size:12px;">
                 <!-- Glossary loaded here -->
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- SIMULATORS PANE -->
-      <div class="pane" id="pane-simulators">
-        <!-- Simulator List -->
-        <div id="sim-list-container" style="display:flex;flex-direction:column;gap:20px;">
-          <h2 style="font-size:22px;border-bottom:1px solid var(--border-color);padding-bottom:12px;">Interactive Laboratory</h2>
-          <p style="font-size:14px;color:var(--text-secondary);">Select a simulation lab below to visualize quantitative science and engineering principles in real-time. Adjust the sliders to see immediate mathematical results and animated feedback.</p>
-          
-          <div class="simulators-grid">
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-material-bg);color:var(--unit-material-color);">
-                  <i class="fa-solid fa-anchor"></i>
-                </div>
-                <div class="sim-card-title">Floating Density Lab</div>
-              </div>
-              <p class="sim-card-desc">Slide Mass and Volume to calculate density ($
-ho = m/V$). Drop the block into a beaker of water to test buoyancy and match with standard substances.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('density')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-            
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-material-bg);color:var(--unit-material-color);">
-                  <i class="fa-solid fa-tint"></i>
-                </div>
-                <div class="sim-card-title">Concentration & Dilution</div>
-              </div>
-              <p class="sim-card-desc">Mix solute in water to calculate concentration ($C=m/V$). Test dilution ratios ($C_1 V_1 = C_2 V_2$) and observe fluid saturation colors.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('concentration')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-            
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-material-bg);color:var(--unit-material-color);">
-                  <i class="fa-solid fa-wave-square"></i>
-                </div>
-                <div class="sim-card-title">Wave Oscillations</div>
-              </div>
-              <p class="sim-card-desc">Visualize Transverse and Longitudinal waves. Adjust Amplitude, Frequency, and Wavelength, and observe particle movement.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('waves')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-            
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-material-bg);color:var(--unit-material-color);">
-                  <i class="fa-solid fa-compass"></i>
-                </div>
-                <div class="sim-card-title">Refraction (Snell's Law)</div>
-              </div>
-              <p class="sim-card-desc">Point a laser at the boundary of a translucent medium. Slide angles of incidence and refraction indices to see light bend or reflect internally.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('refraction')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-            
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-tech-bg);color:var(--unit-tech-color);">
-                  <i class="fa-solid fa-cog"></i>
-                </div>
-                <div class="sim-card-title">Mechanical Linkages</div>
-              </div>
-              <p class="sim-card-desc">Animate friction gears, pulleys, chains, worm gears, rack & pinions, and slider-cranks. Change diameter and gear speed ratios.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('mechanics')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-            
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-living-bg);color:var(--unit-living-color);">
-                  <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <div class="sim-card-title">Menstrual Hormone Tracker</div>
-              </div>
-              <p class="sim-card-desc">Slide through the 28-day menstrual cycle to track FSH, LH, Estrogen, and Progesterone curves alongside ovarian development and uterine thickness.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('hormones')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-            
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-living-bg);color:var(--unit-living-color);">
-                  <i class="fa-solid fa-utensils"></i>
-                </div>
-                <div class="sim-card-title">Digestive System Guide</div>
-              </div>
-              <p class="sim-card-desc">Select organs of the digestive tract (Mouth, Stomach, Intestines, Liver, Pancreas) to visualize mechanical vs chemical digestion, enzyme actions, and secretions.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('digestive')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-living-bg);color:var(--unit-living-color);">
-                  <i class="fa-solid fa-dumbbell"></i>
-                </div>
-                <div class="sim-card-title">Musculoskeletal Elbow Joint</div>
-              </div>
-              <p class="sim-card-desc">Control biceps and triceps contraction/relaxation using flexion/extension. View how antagonistic muscle pairs pull on tendon insertions to rotate joint bones.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('elbow')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-
-            <div class="sim-card">
-              <div class="sim-card-header">
-                <div class="sim-card-icon" style="background:var(--unit-earth-bg);color:var(--unit-earth-color);">
-                  <i class="fa-solid fa-hourglass-half"></i>
-                </div>
-                <div class="sim-card-title">Geological Time Scale</div>
-              </div>
-              <p class="sim-card-desc">Scroll through the 4 geological eras (Precambrian, Paleozoic, Mesozoic, Cenozoic) to track major extinctions, appearance of lifeforms, and superposition stratigraphy.</p>
-              <button class="sim-launch-btn" onclick="launchSimulator('geoscale')">Launch Lab <i class="fa-solid fa-flask"></i></button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Simulator Detail Pane (hidden by default) -->
-        <div id="sim-detail-pane" class="sim-detail-container" style="display:none;">
-          <div class="sim-detail-header">
-            <div style="display:flex;align-items:center;gap:16px;">
-              <button class="sim-back-btn" onclick="closeSimulator()"><i class="fa-solid fa-arrow-left"></i> Back to Lab</button>
-              <div class="sim-title" id="sim-active-title">Floating Density Lab</div>
-            </div>
-          </div>
-          
-          <div class="sim-split-layout">
-            <div class="sim-controls-pane" id="sim-active-controls">
-              <!-- Controls injected here -->
-            </div>
-            <div class="sim-visualizer-pane">
-              <canvas class="sim-canvas" id="sim-canvas"></canvas>
-              <div id="sim-svg-overlay" style="display:none;width:100%;height:100%;"></div>
             </div>
           </div>
         </div>
@@ -2453,8 +2410,7 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
       // Switch to active tab/mode
       switchMode(currentState.currentMode);
       
-      // Initialize Canvas animation loop (general purposes)
-      initCanvasLoop();
+
 
       // Handle window resize for canvas scaling
       window.addEventListener('resize', () => {
@@ -2550,7 +2506,11 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
       
       // Toggle panes
       document.querySelectorAll('.pane').forEach(pane => pane.classList.remove('active'));
-      document.getElementById(`pane-${mode}`).classList.add('active');
+      const activePane = document.getElementById(`pane-${mode}`);
+      if (activePane) {
+        activePane.classList.add('active');
+        activePane.scrollTop = 0;
+      }
       
       // Close mobile sidebar
       toggleSidebar(false);
@@ -2699,21 +2659,7 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
       // Build vocabulary references for sidebar
       buildActiveVocabularyList(secData.explanation);
       
-      // Setup Lab links
-      const labBtn = document.getElementById('study-launch-lab-btn');
-      const relatedLab = getRelatedLab(secData.name);
-      if (relatedLab) {
-        labBtn.style.display = 'flex';
-        labBtn.onclick = () => {
-          switchMode('simulators');
-          launchSimulator(relatedLab);
-        };
-      } else {
-        labBtn.style.display = 'none';
-      }
-      
-      // Inject inline simulators if matching section
-      injectInlineSimulators(secData.name);
+
       
       // Setup practice questions
       buildQuestionsList(secData.questions, idx);
@@ -2726,19 +2672,7 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
       }
     }
 
-    function getRelatedLab(secName) {
-      const name = secName.toLowerCase();
-      if (name.includes('density')) return 'density';
-      if (name.includes('dilution') || name.includes('concentration')) return 'concentration';
-      if (name.includes('waves') && !name.includes('deviation')) return 'waves';
-      if (name.includes('deviation of light')) return 'refraction';
-      if (name.includes('motion transmission') || name.includes('motion transformation') || name.includes('mechanical engineering')) return 'mechanics';
-      if (name.includes('hormone regulation') || name.includes('reproduction')) return 'hormones';
-      if (name.includes('digestive')) return 'digestive';
-      if (name.includes('musculoskeletal') || name.includes('joints') || name.includes('muscles') || name.includes('elbow')) return 'elbow';
-      if (name.includes('geological time') || name.includes('extinctions') || name.includes('fossils') || name.includes('stratigraphic')) return 'geoscale';
-      return null;
-    }
+    
 
     // EXPLANATION FORMATTER
     function formatExplanationContent(text, secName, inlineFigures = []) {
@@ -2988,48 +2922,7 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
       }
     }
 
-    // INLINE SIMULATORS INJECTOR
-    function injectInlineSimulators(secName) {
-      // Removes any previous inline visualizer
-      const prevLab = document.getElementById('inline-lab-card');
-      if (prevLab) prevLab.remove();
-      
-      const relatedLab = getRelatedLab(secName);
-      if (!relatedLab) return;
-      
-      // Create a nice card to hold the inline lab
-      const explBox = document.getElementById('study-active-explanation');
-      const labCard = document.createElement('div');
-      labCard.id = 'inline-lab-card';
-      labCard.style.marginTop = '24px';
-      labCard.style.padding = '24px';
-      labCard.style.border = '1px solid var(--border-color)';
-      labCard.style.borderRadius = 'var(--radius-xl)';
-      labCard.style.backgroundColor = 'var(--bg-tertiary)';
-      
-      labCard.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-          <h4 style="font-size:15px;display:flex;align-items:center;gap:8px;color:var(--text-primary);">
-            <i class="fa-solid fa-flask-vial"></i> Inline Visual Lab: ${secName.split(': ').pop()}
-          </h4>
-          <button class="sim-launch-btn" style="padding:6px 12px;font-size:11px;" onclick="switchMode('simulators'); launchSimulator('${relatedLab}')">Open Full Lab</button>
-        </div>
-        <div style="height:320px;border-radius:var(--radius-md);overflow:hidden;position:relative;" id="inline-canvas-wrapper">
-          <canvas id="inline-sim-canvas" style="width:100%;height:100%;background:#ffffff;display:block;"></canvas>
-          <div id="inline-svg-overlay" style="display:none;width:100%;height:100%;"></div>
-        </div>
-        <div id="inline-sim-controls" style="margin-top:16px;display:grid;grid-template-columns:1fr;gap:12px;">
-          <!-- Controls will be populated here -->
-        </div>
-      `;
-      
-      explBox.appendChild(labCard);
-      
-      // Start inline rendering
-      setTimeout(() => {
-        initInlineSimulator(relatedLab);
-      }, 50);
-    }
+    
 
     // SORT & FILTER TABLES
     function filterTable(input) {
@@ -3456,8 +3349,7 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
       // Flashcards Mastered
       document.getElementById('dash-flashcard-count').innerText = masteredCards.length;
       
-      // Sims Explored
-      document.getElementById('dash-sims-explored').innerText = `${currentState.simsExplored.length} / 9`;
+
       
       // Quiz Accuracy
       let totalQuestionsAttempted = 0;
@@ -3519,2165 +3411,6 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
       loadSection(lastSec);
     }
 
-    // LAB SIMULATORS IMPLEMENTATION
-    let simAnimationId = null;
-    let simCanvas, simCtx;
-    let simSvgOverlay;
-    
-    // Simulator states
-    let densityState = { mass: 50, volume: 25 };
-    let concState = { solute: 20, solvent: 250, addedWater: 0, mode: 'saturation' };
-    let waveState = { amp: 30, freq: 2, waveLength: 100, mode: 'transverse' };
-    let refractionState = { angle: 30, n1: 1.0, n2: 1.5 };
-    let mechanicsState = { speed: 1, ratio: 1.0, driverTeeth: 20, drivenTeeth: 20, type: 'gears', angle: 0 };
-    let hormonesState = { day: 14 };
-    let digestiveState = { selectedOrgan: 'mouth', bolusProgress: 0, animating: false };
-    let elbowState = { angle: 90 };
-    let geoscaleState = { selectedEra: 'cenozoic' };
-    
-    function launchSimulator(simType) {
-      currentState.activeSimulator = simType;
-      
-      // Mark as explored
-      if (!currentState.simsExplored.includes(simType)) {
-        currentState.simsExplored.push(simType);
-        localStorage.setItem('simsExplored', JSON.stringify(currentState.simsExplored));
-      }
-      
-      // Setup panels
-      document.getElementById('sim-list-container').style.display = 'none';
-      document.getElementById('sim-detail-pane').style.display = 'flex';
-      
-      // Get title
-      const titles = {
-        density: 'Floating Density Lab',
-        concentration: 'Concentration & Dilution Lab',
-        waves: 'Wave Oscillations Visualizer',
-        refraction: 'Snell’s Law Refraction Visualizer',
-        mechanics: 'Mechanical Linkages & Gear Systems',
-        hormones: 'Menstrual Hormone Regulation Timeline',
-        digestive: 'Digestive System Anatomy & Processes',
-        elbow: 'Musculoskeletal Elbow Joint (Antagonistic Muscles)',
-        geoscale: 'Geological Time Scale & Stratigraphy'
-      };
-      document.getElementById('sim-active-title').innerText = titles[simType];
-      
-      // Setup Canvas
-      simCanvas = document.getElementById('sim-canvas');
-      simCtx = simCanvas.getContext('2d');
-      resizeSimCanvas();
-      
-      // Setup controls
-      const controlsBox = document.getElementById('sim-active-controls');
-      controlsBox.innerHTML = '';
-      simSvgOverlay = document.getElementById('sim-svg-overlay');
-      simSvgOverlay.style.display = 'none';
-      simCanvas.style.display = 'block';
-      
-      if (simType === 'density') {
-        setupDensityControls(controlsBox);
-      } else if (simType === 'concentration') {
-        setupConcentrationControls(controlsBox);
-      } else if (simType === 'waves') {
-        setupWavesControls(controlsBox);
-      } else if (simType === 'refraction') {
-        setupRefractionControls(controlsBox);
-      } else if (simType === 'mechanics') {
-        setupMechanicsControls(controlsBox);
-      } else if (simType === 'hormones') {
-        setupHormonesControls(controlsBox);
-      } else if (simType === 'digestive') {
-        setupDigestiveControls(controlsBox);
-      } else if (simType === 'elbow') {
-        setupElbowControls(controlsBox);
-      } else if (simType === 'geoscale') {
-        setupGeoscaleControls(controlsBox);
-      }
-      
-      // Start loop
-      if (simAnimationId) cancelAnimationFrame(simAnimationId);
-      runSimulatorLoop();
-    }
-
-    function closeSimulator() {
-      currentState.activeSimulator = null;
-      if (simAnimationId) cancelAnimationFrame(simAnimationId);
-      document.getElementById('sim-list-container').style.display = 'block';
-      document.getElementById('sim-detail-pane').style.display = 'none';
-      updateDashboardStats();
-    }
-
-    function resizeSimCanvas() {
-      if (simCanvas) {
-        const rect = simCanvas.parentNode.getBoundingClientRect();
-        simCanvas.width = rect.width;
-        simCanvas.height = rect.height;
-      }
-    }
-
-    function runSimulatorLoop() {
-      if (!currentState.activeSimulator) return;
-      
-      // Clear
-      simCtx.clearRect(0, 0, simCanvas.width, simCanvas.height);
-      
-      // Render based on active simulator
-      if (currentState.activeSimulator === 'density') {
-        renderDensity();
-      } else if (currentState.activeSimulator === 'concentration') {
-        renderConcentration();
-      } else if (currentState.activeSimulator === 'waves') {
-        renderWaves();
-      } else if (currentState.activeSimulator === 'refraction') {
-        renderRefraction();
-      } else if (currentState.activeSimulator === 'mechanics') {
-        renderMechanics();
-      } else if (currentState.activeSimulator === 'hormones') {
-        renderHormones();
-      } else if (currentState.activeSimulator === 'digestive') {
-        renderDigestive();
-      } else if (currentState.activeSimulator === 'elbow') {
-        renderElbow();
-      } else if (currentState.activeSimulator === 'geoscale') {
-        renderGeoscale();
-      }
-      
-      simAnimationId = requestAnimationFrame(runSimulatorLoop);
-    }
-
-    // DENSITY SIMULATOR
-    function setupDensityControls(box) {
-      box.innerHTML = `
-        <div class="control-group">
-          <div class="control-label">Block Mass (m): <span class="control-value" id="val-density-mass">50.0 g</span></div>
-          <input type="range" class="sim-slider" min="5" max="200" step="0.5" value="50" oninput="updateDensitySim('mass', this.value)">
-        </div>
-        <div class="control-group">
-          <div class="control-label">Block Volume (V): <span class="control-value" id="val-density-vol">25.0 cm³</span></div>
-          <input type="range" class="sim-slider" min="5" max="100" step="0.5" value="25" oninput="updateDensitySim('volume', this.value)">
-        </div>
-        <div class="sim-result-box">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Calculated Density (ρ = m/V):</span>
-            <span class="sim-result-val" id="res-density-val">2.00 g/cm³</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Buoyancy Test (Fluid: Water):</span>
-            <span class="sim-result-val" id="res-density-buoyancy" style="color:var(--color-danger);">Sinks</span>
-          </div>
-          <div class="sim-result-row" style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;">
-            <span class="sim-result-label">Closest Pure Metal:</span>
-            <span class="sim-result-val" id="res-density-material" style="color:var(--color-primary);">Carbon (2.09)</span>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">
-          <strong>Concept Check:</strong> Density is a characteristic property of matter. If a block's density is less than water's density (1.00 g/mL), it will float. If it is greater, it will sink.
-        </div>
-      `;
-      densityState.mass = 50;
-      densityState.volume = 25;
-      updateDensitySim('mass', 50);
-    }
-
-    function updateDensitySim(key, val) {
-      densityState[key] = parseFloat(val);
-      const density = densityState.mass / densityState.volume;
-      
-      document.getElementById(`val-density-${key === 'mass' ? 'mass' : 'vol'}`).innerText = `${densityState[key].toFixed(1)} ${key === 'mass' ? 'g' : 'cm³'}`;
-      document.getElementById('res-density-val').innerText = `${density.toFixed(2)} g/cm³`;
-      
-      const buoyancy = document.getElementById('res-density-buoyancy');
-      if (density <= 1.0) {
-        buoyancy.innerText = "Floats";
-        buoyancy.style.color = "var(--color-success)";
-      } else {
-        buoyancy.innerText = "Sinks";
-        buoyancy.style.color = "var(--color-danger)";
-      }
-      
-      // Match material
-      const metals = [
-        { name: "Ethanol", d: 0.79 },
-        { name: "Water", d: 1.0 },
-        { name: "Glycerin", d: 1.26 },
-        { name: "Magnesium", d: 1.74 },
-        { name: "Carbon (Graphite)", d: 2.09 },
-        { name: "Aluminum", d: 2.7 },
-        { name: "Iron", d: 7.86 },
-        { name: "Nickel", d: 8.90 },
-        { name: "Copper", d: 8.94 },
-        { name: "Lead", d: 11.34 },
-        { name: "Mercury", d: 13.55 },
-        { name: "Gold", d: 19.32 }
-      ];
-      
-      let closest = metals[0];
-      let minDiff = Math.abs(density - closest.d);
-      metals.forEach(m => {
-        let diff = Math.abs(density - m.d);
-        if (diff < minDiff) {
-          minDiff = diff;
-          closest = m;
-        }
-      });
-      
-      document.getElementById('res-density-material').innerText = `${closest.name} (std: ${closest.d.toFixed(2)})`;
-    }
-
-    function renderDensity() {
-      const cx = simCanvas.width / 2;
-      const cy = simCanvas.height / 2;
-      
-      // Beaker dimensions
-      const beakerW = 200;
-      const beakerH = 220;
-      const beakerX = cx - beakerW / 2;
-      const beakerY = cy - 60;
-      
-      // Beaker fluid level
-      const fluidY = beakerY + 80;
-      const fluidH = beakerH - 80;
-      
-      // RENDER FLUID
-      simCtx.fillStyle = 'rgba(14, 165, 233, 0.4)';
-      simCtx.fillRect(beakerX + 10, fluidY, beakerW - 20, fluidH - 10);
-      
-      // Draw fluid surface wave
-      simCtx.fillStyle = 'rgba(14, 165, 233, 0.6)';
-      simCtx.beginPath();
-      simCtx.ellipse(cx, fluidY, (beakerW - 20)/2, 6, 0, 0, 2*Math.PI);
-      simCtx.fill();
-      
-      // Calculate block size based on volume
-      const side = Math.min(100, Math.max(30, 20 + Math.pow(densityState.volume, 1/3) * 18));
-      const density = densityState.mass / densityState.volume;
-      
-      // Calculate block position
-      let blockX = cx - side / 2;
-      let blockY;
-      
-      if (density <= 1.0) {
-        // Floats: fraction submerged is equal to density
-        const submergedH = side * density;
-        blockY = fluidY - (side - submergedH);
-      } else {
-        // Sinks: hits bottom of beaker
-        blockY = beakerY + beakerH - side - 10;
-      }
-      
-      // DRAW BLOCK
-      simCtx.fillStyle = 'rgba(148, 163, 184, 0.9)'; // gray block
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 2;
-      simCtx.fillRect(blockX, blockY, side, side);
-      simCtx.strokeRect(blockX, blockY, side, side);
-      
-      // Block label text
-      simCtx.fillStyle = 'var(--text-primary)';
-      simCtx.font = '700 12px Inter';
-      simCtx.textAlign = 'center';
-      simCtx.fillText(`${densityState.mass.toFixed(1)}g`, cx, blockY + side/2 + 4);
-      
-      // RENDER BEAKER WALLS
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 5;
-      simCtx.lineCap = 'round';
-      simCtx.beginPath();
-      simCtx.moveTo(beakerX, beakerY);
-      simCtx.lineTo(beakerX, beakerY + beakerH);
-      simCtx.lineTo(beakerX + beakerW, beakerY + beakerH);
-      simCtx.lineTo(beakerX + beakerW, beakerY);
-      simCtx.stroke();
-      
-      // Beaker Graduations
-      simCtx.strokeStyle = 'var(--text-muted)';
-      simCtx.lineWidth = 2;
-      simCtx.textAlign = 'left';
-      simCtx.font = '10px Inter';
-      simCtx.fillStyle = 'var(--text-muted)';
-      
-      for (let mark = 50; mark <= 250; mark += 50) {
-        let markY = beakerY + beakerH - (mark / 250) * (beakerH - 40);
-        simCtx.beginPath();
-        simCtx.moveTo(beakerX + beakerW - 20, markY);
-        simCtx.lineTo(beakerX + beakerW, markY);
-        simCtx.stroke();
-        simCtx.fillText(`${mark} mL`, beakerX + beakerW + 8, markY + 3);
-      }
-    }
-
-    // CONCENTRATION & DILUTION SIMULATOR
-    function setupConcentrationControls(box) {
-      box.innerHTML = `
-        <div class="theme-toggle-container" style="margin-bottom:12px;">
-          <button class="filter-tab active" id="tab-conc-saturation" onclick="setConcMode('saturation')">Saturation Lab</button>
-          <button class="filter-tab" id="tab-conc-dilution" onclick="setConcMode('dilution')">Dilution Lab</button>
-        </div>
-        
-        <div id="conc-inputs-container">
-          <div class="control-group">
-            <div class="control-label">Solute Mass (m): <span class="control-value" id="val-conc-solute">20.0 g</span></div>
-            <input type="range" class="sim-slider" min="1" max="100" step="0.5" value="20" oninput="updateConcSim('solute', this.value)">
-          </div>
-          <div class="control-group">
-            <div class="control-label">Solvent Volume (V): <span class="control-value" id="val-conc-solvent">250 mL</span></div>
-            <input type="range" class="sim-slider" min="50" max="1000" step="10" value="250" oninput="updateConcSim('solvent', this.value)">
-          </div>
-        </div>
-        
-        <div id="dilution-inputs-container" style="display:none;flex-direction:column;gap:12px;">
-          <div style="font-size:12px;font-weight:700;color:var(--text-secondary);">Dilution (C₁V₁ = C₂V₂)</div>
-          <div class="sim-result-box" style="margin-bottom:8px;">
-            <div class="sim-result-row"><span>C₁ (Initial Conc.)</span><span id="val-dilution-c1">80.0 g/L</span></div>
-            <div class="sim-result-row"><span>V₁ (Initial Vol.)</span><span id="val-dilution-v1">250 mL</span></div>
-          </div>
-          <div class="control-group">
-            <div class="control-label">Added Water: <span class="control-value" id="val-conc-addedWater">0 mL</span></div>
-            <input type="range" class="sim-slider" min="0" max="750" step="10" value="0" oninput="updateConcSim('addedWater', this.value)">
-          </div>
-        </div>
-        
-        <div class="sim-result-box" style="margin-top:16px;">
-          <div class="sim-result-row">
-            <span class="sim-result-label" id="lbl-conc-final">Concentration:</span>
-            <span class="sim-result-val" id="res-conc-val">80.0 g/L</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Percent Concentration:</span>
-            <span class="sim-result-val" id="res-conc-percent">8.0%</span>
-          </div>
-          <div class="sim-result-row" id="row-conc-saturation">
-            <span class="sim-result-label">Saturation Status:</span>
-            <span class="sim-result-val" id="res-conc-saturated" style="color:var(--color-success);">Unsaturated</span>
-          </div>
-        </div>
-      `;
-      concState.mode = 'saturation';
-      concState.solute = 20;
-      concState.solvent = 250;
-      concState.addedWater = 0;
-      updateConcSim('solute', 20);
-    }
-
-    function setConcMode(mode) {
-      concState.mode = mode;
-      
-      document.querySelectorAll('#pane-simulators .filter-tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(`tab-conc-${mode}`).classList.add('active');
-      
-      const concInputs = document.getElementById('conc-inputs-container');
-      const dilInputs = document.getElementById('dilution-inputs-container');
-      
-      if (mode === 'saturation') {
-        concInputs.style.display = 'flex';
-        dilInputs.style.display = 'none';
-        document.getElementById('lbl-conc-final').innerText = "Concentration:";
-        document.getElementById('row-conc-saturation').style.display = 'flex';
-      } else {
-        concInputs.style.display = 'none';
-        dilInputs.style.display = 'flex';
-        document.getElementById('lbl-conc-final').innerText = "C₂ (Final Conc.):";
-        document.getElementById('row-conc-saturation').style.display = 'none';
-      }
-      
-      updateConcSim('solute', concState.solute);
-    }
-
-    function updateConcSim(key, val) {
-      concState[key] = parseFloat(val);
-      
-      if (concState.mode === 'saturation') {
-        document.getElementById('val-conc-solute').innerText = `${concState.solute.toFixed(1)} g`;
-        document.getElementById('val-conc-solvent').innerText = `${concState.solvent} mL`;
-        
-        // C = m/V in g/L. Volume in liters.
-        const vL = concState.solvent / 1000;
-        const conc = concState.solute / vL;
-        const percent = (concState.solute / concState.solvent) * 100;
-        
-        document.getElementById('res-conc-val').innerText = `${conc.toFixed(1)} g/L`;
-        document.getElementById('res-conc-percent').innerText = `${percent.toFixed(1)}%`;
-        
-        // Saturated at 120 g/L (arbitrary threshold for demonstration)
-        const satStatus = document.getElementById('res-conc-saturated');
-        if (conc >= 120) {
-          satStatus.innerText = "Saturated (Precipitating)";
-          satStatus.style.color = "var(--color-danger)";
-        } else {
-          satStatus.innerText = "Unsaturated";
-          satStatus.style.color = "var(--color-success)";
-        }
-      } else {
-        // Dilution mode
-        // V1 = solvent, C1 = initial (computed from initial solute/solvent)
-        const v1 = concState.solvent;
-        const c1 = (concState.solute / (v1 / 1000));
-        
-        document.getElementById('val-dilution-c1').innerText = `${c1.toFixed(1)} g/L`;
-        document.getElementById('val-dilution-v1').innerText = `${v1} mL`;
-        document.getElementById('val-conc-addedWater').innerText = `${concState.addedWater} mL`;
-        
-        const v2 = v1 + concState.addedWater;
-        // C2 = C1 * V1 / V2
-        const c2 = c1 * (v1 / v2);
-        const percent2 = (concState.solute / v2) * 100;
-        
-        document.getElementById('res-conc-val').innerText = `${c2.toFixed(1)} g/L`;
-        document.getElementById('res-conc-percent').innerText = `${percent2.toFixed(1)}%`;
-      }
-    }
-
-    function renderConcentration() {
-      const cx = simCanvas.width / 2;
-      const cy = simCanvas.height / 2;
-      
-      const beakerW = 180;
-      const beakerH = 200;
-      const beakerX = cx - beakerW / 2;
-      const beakerY = cy - 50;
-      
-      const v1 = concState.solvent;
-      const totalV = concState.mode === 'saturation' ? v1 : v1 + concState.addedWater;
-      
-      // Render level proportional to total volume (max 1000 mL)
-      const maxFillHeight = beakerH - 40;
-      const fillHeight = (totalV / 1000) * maxFillHeight;
-      const fluidY = beakerY + beakerH - fillHeight - 10;
-      
-      // CALCULATE COLOR OPACITY BASED ON CONCENTRATION
-      // Initial concentration
-      const c1 = (concState.solute / (v1 / 1000));
-      const c2 = concState.mode === 'saturation' ? c1 : c1 * (v1 / totalV);
-      
-      // Max color intensity reached around 120 g/L
-      const opacity = Math.min(0.9, 0.1 + (c2 / 120) * 0.7);
-      
-      // Draw liquid
-      simCtx.fillStyle = `rgba(185, 28, 28, ${opacity})`; // red solution
-      simCtx.fillRect(beakerX + 8, fluidY, beakerW - 16, fillHeight);
-      
-      // Draw fluid ellipse top
-      simCtx.fillStyle = `rgba(185, 28, 28, ${Math.min(1.0, opacity + 0.1)})`;
-      simCtx.beginPath();
-      simCtx.ellipse(cx, fluidY, (beakerW - 16)/2, 6, 0, 0, 2*Math.PI);
-      simCtx.fill();
-      
-      // DRAW PRECIPITATE CRYSTALS (if saturated in saturation mode)
-      if (concState.mode === 'saturation' && c1 > 120) {
-        const excess = concState.solute - (120 * (v1/1000));
-        const crystalH = Math.min(25, 2 + excess * 0.5);
-        
-        simCtx.fillStyle = 'rgba(239, 68, 68, 0.9)';
-        simCtx.beginPath();
-        simCtx.moveTo(beakerX + 10, beakerY + beakerH - 10);
-        simCtx.lineTo(cx, beakerY + beakerH - 10 - crystalH);
-        simCtx.lineTo(beakerX + beakerW - 10, beakerY + beakerH - 10);
-        simCtx.fill();
-        
-        simCtx.fillStyle = 'var(--text-primary)';
-        simCtx.font = 'bold 10px Inter';
-        simCtx.textAlign = 'center';
-        simCtx.fillText("Precipitate (Excess)", cx, beakerY + beakerH - 10 - crystalH - 6);
-      }
-      
-      // DRAW BEAKER
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 4;
-      simCtx.beginPath();
-      simCtx.moveTo(beakerX, beakerY);
-      simCtx.lineTo(beakerX, beakerY + beakerH);
-      simCtx.lineTo(beakerX + beakerW, beakerY + beakerH);
-      simCtx.lineTo(beakerX + beakerW, beakerY);
-      simCtx.stroke();
-      
-      // Beaker markers
-      simCtx.strokeStyle = 'var(--text-muted)';
-      simCtx.lineWidth = 1;
-      simCtx.fillStyle = 'var(--text-muted)';
-      simCtx.font = '9px Inter';
-      simCtx.textAlign = 'right';
-      
-      for (let mark = 200; mark <= 1000; mark += 200) {
-        let markY = beakerY + beakerH - (mark / 1000) * maxFillHeight - 10;
-        simCtx.beginPath();
-        simCtx.moveTo(beakerX, markY);
-        simCtx.lineTo(beakerX + 15, markY);
-        simCtx.stroke();
-        simCtx.fillText(`${mark} mL`, beakerX - 6, markY + 3);
-      }
-    }
-
-    // WAVES SIMULATOR
-    function setupWavesControls(box) {
-      box.innerHTML = `
-        <div class="theme-toggle-container" style="margin-bottom:12px;">
-          <button class="filter-tab active" id="tab-waves-transverse" onclick="setWaveMode('transverse')">Transverse Wave</button>
-          <button class="filter-tab" id="tab-waves-longitudinal" onclick="setWaveMode('longitudinal')">Longitudinal Wave</button>
-        </div>
-        
-        <div class="control-group">
-          <div class="control-label">Amplitude (A): <span class="control-value" id="val-wave-amp">30 px</span></div>
-          <input type="range" class="sim-slider" min="5" max="60" step="1" value="30" oninput="updateWaveSim('amp', this.value)">
-        </div>
-        <div class="control-group">
-          <div class="control-label">Frequency (f): <span class="control-value" id="val-wave-freq">2.0 Hz</span></div>
-          <input type="range" class="sim-slider" min="0.5" max="5.0" step="0.1" value="2.0" oninput="updateWaveSim('freq', this.value)">
-        </div>
-        <div class="control-group">
-          <div class="control-label">Wavelength (λ): <span class="control-value" id="val-wave-wl">100 px</span></div>
-          <input type="range" class="sim-slider" min="40" max="250" step="5" value="100" oninput="updateWaveSim('waveLength', this.value)">
-        </div>
-        
-        <div class="sim-result-box">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Wave Velocity (v = f * λ):</span>
-            <span class="sim-result-val" id="res-wave-vel">200 px/s</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Period (T = 1/f):</span>
-            <span class="sim-result-val" id="res-wave-period">0.50 s</span>
-          </div>
-        </div>
-      `;
-      waveState.mode = 'transverse';
-      waveState.amp = 30;
-      waveState.freq = 2;
-      waveState.waveLength = 100;
-    }
-
-    function setWaveMode(mode) {
-      waveState.mode = mode;
-      document.querySelectorAll('#pane-simulators .filter-tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(`tab-waves-${mode}`).classList.add('active');
-    }
-
-    function updateWaveSim(key, val) {
-      waveState[key] = parseFloat(val);
-      
-      document.getElementById('val-wave-amp').innerText = `${waveState.amp.toFixed(0)} px`;
-      document.getElementById('val-wave-freq').innerText = `${waveState.freq.toFixed(1)} Hz`;
-      document.getElementById('val-wave-wl').innerText = `${waveState.waveLength.toFixed(0)} px`;
-      
-      const velocity = waveState.freq * waveState.waveLength;
-      document.getElementById('res-wave-vel').innerText = `${velocity.toFixed(0)} px/s`;
-      document.getElementById('res-wave-period').innerText = `${(1/waveState.freq).toFixed(2)} s`;
-    }
-
-    let waveTime = 0;
-    function renderWaves() {
-      waveTime += 0.05 * waveState.freq;
-      const cy = simCanvas.height / 2;
-      
-      simCtx.strokeStyle = 'var(--color-primary)';
-      simCtx.lineWidth = 3;
-      
-      if (waveState.mode === 'transverse') {
-        // RENDER TRANSVERSE WAVE
-        simCtx.beginPath();
-        for (let x = 30; x < simCanvas.width - 30; x++) {
-          // y = A * sin(2*pi*x / L - time)
-          let y = cy + waveState.amp * Math.sin((2 * Math.PI * x) / waveState.waveLength - waveTime);
-          if (x === 30) simCtx.moveTo(x, y);
-          else simCtx.lineTo(x, y);
-        }
-        simCtx.stroke();
-        
-        // Draw baseline
-        simCtx.strokeStyle = 'rgba(0,0,0,0.1)';
-        simCtx.lineWidth = 1;
-        simCtx.beginPath();
-        simCtx.moveTo(30, cy);
-        simCtx.lineTo(simCanvas.width - 30, cy);
-        simCtx.stroke();
-        
-        // Draw some moving particles
-        simCtx.fillStyle = 'var(--color-success)';
-        for (let x = 100; x < simCanvas.width - 100; x += 100) {
-          let y = cy + waveState.amp * Math.sin((2 * Math.PI * x) / waveState.waveLength - waveTime);
-          simCtx.beginPath();
-          simCtx.arc(x, y, 6, 0, 2*Math.PI);
-          simCtx.fill();
-        }
-        
-        // Label crest and trough
-        simCtx.fillStyle = 'var(--text-muted)';
-        simCtx.font = '10px Inter';
-        simCtx.fillText("Crest", 120, cy - waveState.amp - 10);
-        simCtx.fillText("Trough", 120 + waveState.waveLength/2, cy + waveState.amp + 15);
-      } else {
-        // RENDER LONGITUDINAL WAVE (using dot springs)
-        simCtx.fillStyle = 'var(--text-primary)';
-        const numParticles = 80;
-        const spacing = (simCanvas.width - 60) / numParticles;
-        
-        for (let i = 0; i < numParticles; i++) {
-          let xBase = 30 + i * spacing;
-          // Displacement: d = A * sin(2*pi*x / L - time)
-          let disp = waveState.amp * 0.7 * Math.sin((2 * Math.PI * xBase) / waveState.waveLength - waveTime);
-          let x = xBase + disp;
-          
-          simCtx.beginPath();
-          simCtx.arc(x, cy, 4, 0, 2*Math.PI);
-          simCtx.fill();
-          
-          // Color code compressions
-          if (Math.abs(disp) < 5) {
-            simCtx.fillStyle = 'var(--color-danger)';
-          } else {
-            simCtx.fillStyle = 'var(--text-primary)';
-          }
-        }
-        
-        simCtx.fillStyle = 'var(--text-muted)';
-        simCtx.font = '10px Inter';
-        simCtx.fillText("Compression (Dense)", cx - 100, cy - 40);
-        simCtx.fillText("Rarefaction (Sparse)", cx + 100, cy - 40);
-      }
-    }
-
-    // Snell's Law REFRACTION SIMULATOR
-    function setupRefractionControls(box) {
-      box.innerHTML = `
-        <div class="control-group">
-          <div class="control-label">Angle of Incidence (θ₁): <span class="control-value" id="val-ref-angle">30°</span></div>
-          <input type="range" class="sim-slider" min="0" max="85" step="1" value="30" oninput="updateRefractionSim('angle', this.value)">
-        </div>
-        <div class="control-group">
-          <div class="control-label">Medium 1 Refractive Index (n₁): <span class="control-value" id="val-ref-n1">1.00 (Air)</span></div>
-          <input type="range" class="sim-slider" min="1.0" max="2.4" step="0.05" value="1.0" oninput="updateRefractionSim('n1', this.value)">
-        </div>
-        <div class="control-group">
-          <div class="control-label">Medium 2 Refractive Index (n₂): <span class="control-value" id="val-ref-n2">1.50 (Glass)</span></div>
-          <input type="range" class="sim-slider" min="1.0" max="2.4" step="0.05" value="1.5" oninput="updateRefractionSim('n2', this.value)">
-        </div>
-        
-        <div class="sim-result-box">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Angle of Refraction (θ₂):</span>
-            <span class="sim-result-val" id="res-ref-angle2">19.5°</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Angle of Reflection (θᵣ):</span>
-            <span class="sim-result-val" id="res-ref-reflection">30.0°</span>
-          </div>
-          <div class="sim-result-row" id="row-ref-critical" style="display:none;color:var(--color-danger);">
-            <span class="sim-result-label">Status:</span>
-            <span>Total Internal Reflection!</span>
-          </div>
-        </div>
-      `;
-      refractionState.angle = 30;
-      refractionState.n1 = 1.0;
-      refractionState.n2 = 1.5;
-      updateRefractionSim('angle', 30);
-    }
-
-    function updateRefractionSim(key, val) {
-      refractionState[key] = parseFloat(val);
-      
-      document.getElementById('val-ref-angle').innerText = `${refractionState.angle.toFixed(0)}°`;
-      
-      let label1 = refractionState.n1.toFixed(2);
-      if (Math.abs(refractionState.n1 - 1.0) < 0.02) label1 += " (Air)";
-      else if (Math.abs(refractionState.n1 - 1.33) < 0.02) label1 += " (Water)";
-      document.getElementById('val-ref-n1').innerText = label1;
-      
-      let label2 = refractionState.n2.toFixed(2);
-      if (Math.abs(refractionState.n2 - 1.0) < 0.02) label2 += " (Air)";
-      else if (Math.abs(refractionState.n2 - 1.33) < 0.02) label2 += " (Water)";
-      else if (Math.abs(refractionState.n2 - 1.5) < 0.02) label2 += " (Glass)";
-      else if (Math.abs(refractionState.n2 - 2.42) < 0.02) label2 += " (Diamond)";
-      document.getElementById('val-ref-n2').innerText = label2;
-      
-      // Calculate refraction using Snell's Law
-      // n1 * sin(theta1) = n2 * sin(theta2)
-      // sin(theta2) = (n1/n2) * sin(theta1)
-      const rad1 = (refractionState.angle * Math.PI) / 180;
-      const sin2 = (refractionState.n1 / refractionState.n2) * Math.sin(rad1);
-      
-      const critRow = document.getElementById('row-ref-critical');
-      const angle2Val = document.getElementById('res-ref-angle2');
-      
-      if (sin2 > 1.0) {
-        // Total internal reflection
-        critRow.style.display = 'flex';
-        angle2Val.innerText = "N/A";
-      } else {
-        critRow.style.display = 'none';
-        const rad2 = Math.asin(sin2);
-        const deg2 = (rad2 * 180) / Math.PI;
-        angle2Val.innerText = `${deg2.toFixed(1)}°`;
-      }
-      
-      document.getElementById('res-ref-reflection').innerText = `${refractionState.angle.toFixed(1)}°`;
-    }
-
-    function renderRefraction() {
-      const cx = simCanvas.width / 2;
-      const cy = simCanvas.height / 2;
-      
-      // RENDER MEDIUM 2 (bottom half)
-      simCtx.fillStyle = 'rgba(186, 230, 253, 0.4)'; // light blue glass/water
-      simCtx.fillRect(0, cy, simCanvas.width, cy);
-      
-      // Draw Boundary Line
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 2;
-      simCtx.beginPath();
-      simCtx.moveTo(0, cy);
-      simCtx.lineTo(simCanvas.width, cy);
-      simCtx.stroke();
-      
-      // Draw Normal Line
-      simCtx.strokeStyle = 'var(--text-muted)';
-      simCtx.setLineDash([5, 5]);
-      simCtx.beginPath();
-      simCtx.moveTo(cx, 20);
-      simCtx.lineTo(cx, simCanvas.height - 20);
-      simCtx.stroke();
-      simCtx.setLineDash([]);
-      
-      // Angles
-      const theta1 = (refractionState.angle * Math.PI) / 180;
-      const sin2 = (refractionState.n1 / refractionState.n2) * Math.sin(theta1);
-      const isTIR = sin2 > 1.0;
-      
-      const beamLength = 200;
-      
-      // DRAW INCIDENT RAY (top-left to center)
-      const incX = cx - beamLength * Math.sin(theta1);
-      const incY = cy - beamLength * Math.cos(theta1);
-      
-      simCtx.strokeStyle = '#ef4444'; // red laser beam
-      simCtx.lineWidth = 4;
-      simCtx.beginPath();
-      simCtx.moveTo(incX, incY);
-      simCtx.lineTo(cx, cy);
-      simCtx.stroke();
-      
-      // DRAW REFLECTED RAY (center to top-right)
-      const refX = cx + beamLength * Math.sin(theta1);
-      const refY = cy - beamLength * Math.cos(theta1);
-      simCtx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; // weak reflection
-      simCtx.beginPath();
-      simCtx.moveTo(cx, cy);
-      simCtx.lineTo(refX, refY);
-      simCtx.stroke();
-      
-      // DRAW REFRACTED OR INTERNAL REFLECTED RAY
-      simCtx.strokeStyle = '#ef4444';
-      if (isTIR) {
-        // Total internal reflection: beam reflects back down
-        const tirX = cx + beamLength * Math.sin(theta1);
-        const tirY = cy + beamLength * Math.cos(theta1);
-        simCtx.lineWidth = 4;
-        simCtx.beginPath();
-        simCtx.moveTo(cx, cy);
-        simCtx.lineTo(tirX, tirY);
-        simCtx.stroke();
-      } else {
-        // Refraction: beam bends
-        const theta2 = Math.asin(sin2);
-        const refrX = cx + beamLength * Math.sin(theta2);
-        const refrY = cy + beamLength * Math.cos(theta2);
-        simCtx.lineWidth = 4;
-        simCtx.beginPath();
-        simCtx.moveTo(cx, cy);
-        simCtx.lineTo(refrX, refrY);
-        simCtx.stroke();
-      }
-      
-      // Labels
-      simCtx.fillStyle = 'var(--text-primary)';
-      simCtx.font = '700 12px Inter';
-      simCtx.textAlign = 'left';
-      simCtx.fillText(`n₁ = ${refractionState.n1.toFixed(2)} (Medium 1)`, 24, cy - 24);
-      simCtx.fillText(`n₂ = ${refractionState.n2.toFixed(2)} (Medium 2)`, 24, cy + 32);
-    }
-
-    // MECHANICAL LINKAGES SIMULATOR
-    function setupMechanicsControls(box) {
-      box.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Mechanism Type:</label>
-          <select class="sa-input" onchange="updateMechanicsSim('type', this.value)" style="padding:8px 12px;">
-            <option value="gears">Friction Gears & meshed assemblies</option>
-            <option value="pulleys">Belt and Pulley</option>
-            <option value="chain">Chain and Sprocket</option>
-            <option value="worm">Wheel and Worm Gear</option>
-            <option value="rack">Rack and Pinion</option>
-            <option value="crank">Slider Crank Piston</option>
-          </select>
-        </div>
-        <div class="control-group">
-          <div class="control-label">Driver Diameter/Teeth (D₁): <span class="control-value" id="val-mech-teeth1">20 teeth</span></div>
-          <input type="range" class="sim-slider" min="10" max="40" step="10" value="20" oninput="updateMechanicsSim('driverTeeth', this.value)">
-        </div>
-        <div class="control-group">
-          <div class="control-label">Driven Diameter/Teeth (D₂): <span class="control-value" id="val-mech-teeth2">20 teeth</span></div>
-          <input type="range" class="sim-slider" min="10" max="40" step="10" value="20" oninput="updateMechanicsSim('drivenTeeth', this.value)">
-        </div>
-        
-        <div class="sim-result-box">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Speed Ratio (D₁/D₂):</span>
-            <span class="sim-result-val" id="res-mech-ratio">1.00</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Driven Rotational Speed:</span>
-            <span class="sim-result-val" id="res-mech-speed">Same as Driver</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Reversibility:</span>
-            <span class="sim-result-val" id="res-mech-reversible" style="color:var(--color-success);">Yes</span>
-          </div>
-        </div>
-      `;
-      mechanicsState.type = 'gears';
-      mechanicsState.driverTeeth = 20;
-      mechanicsState.drivenTeeth = 20;
-      updateMechanicsSim('driverTeeth', 20);
-    }
-
-    function updateMechanicsSim(key, val) {
-      mechanicsState[key] = val;
-      if (key === 'driverTeeth' || key === 'drivenTeeth') mechanicsState[key] = parseInt(val);
-      
-      const t1 = mechanicsState.driverTeeth;
-      const t2 = mechanicsState.drivenTeeth;
-      const ratio = t1 / t2;
-      
-      document.getElementById('val-mech-teeth1').innerText = `${t1} teeth`;
-      document.getElementById('val-mech-teeth2').innerText = `${t2} teeth`;
-      document.getElementById('res-mech-ratio').innerText = ratio.toFixed(2);
-      
-      const speedVal = document.getElementById('res-mech-speed');
-      if (ratio > 1.01) {
-        speedVal.innerText = "Speed Increase (Faster)";
-        speedVal.style.color = "var(--color-success)";
-      } else if (ratio < 0.99) {
-        speedVal.innerText = "Speed Decrease (Slower)";
-        speedVal.style.color = "var(--color-danger)";
-      } else {
-        speedVal.innerText = "No Speed Change";
-        speedVal.style.color = "var(--text-primary)";
-      }
-      
-      const revVal = document.getElementById('res-mech-reversible');
-      if (mechanicsState.type === 'worm') {
-        revVal.innerText = "Irreversible (No)";
-        revVal.style.color = "var(--color-danger)";
-      } else {
-        revVal.innerText = "Reversible (Yes)";
-        revVal.style.color = "var(--color-success)";
-      }
-    }
-
-    function renderMechanics() {
-      const cx = simCanvas.width / 2;
-      const cy = simCanvas.height / 2;
-      
-      mechanicsState.angle += 0.02; // Rotate driver
-      
-      const d1 = mechanicsState.driverTeeth * 3;
-      const d2 = mechanicsState.drivenTeeth * 3;
-      
-      const ratio = mechanicsState.driverTeeth / mechanicsState.drivenTeeth;
-      const angle2 = -mechanicsState.angle * ratio; // meshed gears turn opposite
-      
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 3;
-      
-      if (mechanicsState.type === 'gears' || mechanicsState.type === 'pulleys' || mechanicsState.type === 'chain') {
-        // RENDER TWO WHEELS
-        // Distance depends on mechanism
-        let dist = d1 + d2 + 5;
-        if (mechanicsState.type === 'pulleys' || mechanicsState.type === 'chain') dist = d1 + d2 + 100;
-        
-        const x1 = cx - dist/2;
-        const x2 = cx + dist/2;
-        
-        // Draw Driver Wheel
-        simCtx.fillStyle = 'rgba(99, 102, 241, 0.1)';
-        simCtx.beginPath();
-        simCtx.arc(x1, cy, d1, 0, 2*Math.PI);
-        simCtx.fill();
-        simCtx.stroke();
-        
-        // Draw Driver Rotation Indicator line
-        simCtx.beginPath();
-        simCtx.moveTo(x1, cy);
-        simCtx.lineTo(x1 + d1 * Math.cos(mechanicsState.angle), cy + d1 * Math.sin(mechanicsState.angle));
-        simCtx.stroke();
-        
-        // Draw Driven Wheel
-        const currentAngle2 = (mechanicsState.type === 'pulleys' || mechanicsState.type === 'chain') ? mechanicsState.angle * ratio : angle2;
-        simCtx.fillStyle = 'rgba(245, 158, 11, 0.1)';
-        simCtx.beginPath();
-        simCtx.arc(x2, cy, d2, 0, 2*Math.PI);
-        simCtx.fill();
-        simCtx.stroke();
-        
-        // Draw Driven line
-        simCtx.beginPath();
-        simCtx.moveTo(x2, cy);
-        simCtx.lineTo(x2 + d2 * Math.cos(currentAngle2), cy + d2 * Math.sin(currentAngle2));
-        simCtx.stroke();
-        
-        // Draw connection (belt or chain)
-        if (mechanicsState.type === 'pulleys') {
-          // Belt: parallel lines tangent to outer edges
-          simCtx.strokeStyle = 'var(--text-muted)';
-          simCtx.lineWidth = 2;
-          simCtx.beginPath();
-          simCtx.moveTo(x1, cy - d1);
-          simCtx.lineTo(x2, cy - d2);
-          simCtx.moveTo(x1, cy + d1);
-          simCtx.lineTo(x2, cy + d2);
-          simCtx.stroke();
-        } else if (mechanicsState.type === 'chain') {
-          // Chain: dotted belts representing sprockets
-          simCtx.strokeStyle = 'var(--text-primary)';
-          simCtx.lineWidth = 2;
-          simCtx.setLineDash([3, 5]);
-          simCtx.beginPath();
-          simCtx.moveTo(x1, cy - d1);
-          simCtx.lineTo(x2, cy - d2);
-          simCtx.moveTo(x1, cy + d1);
-          simCtx.lineTo(x2, cy + d2);
-          simCtx.stroke();
-          simCtx.setLineDash([]);
-        }
-        
-        // Label Driver and Driven
-        simCtx.fillStyle = 'var(--text-primary)';
-        simCtx.font = 'bold 12px Inter';
-        simCtx.textAlign = 'center';
-        simCtx.fillText("DRIVER", x1, cy - d1 - 15);
-        simCtx.fillText("DRIVEN", x2, cy - d2 - 15);
-      } else if (mechanicsState.type === 'worm') {
-        // Worm gear: vertical screw rotating horizontal wheel
-        const wormW = 40;
-        const wormH = 100;
-        const wormX = cx - 80;
-        const wormY = cy - wormH / 2;
-        
-        const wheelR = 60;
-        const wheelX = cx + 40;
-        
-        // Draw Worm Screw
-        simCtx.fillStyle = 'rgba(99, 102, 241, 0.2)';
-        simCtx.fillRect(wormX, wormY, wormW, wormH);
-        simCtx.strokeRect(wormX, wormY, wormW, wormH);
-        
-        // Screw threads
-        simCtx.strokeStyle = 'var(--text-primary)';
-        simCtx.lineWidth = 2;
-        const numThreads = 10;
-        const threadSpacing = wormH / numThreads;
-        for (let i = 0; i <= numThreads; i++) {
-          let threadY = wormY + i * threadSpacing + (mechanicsState.angle * 10) % threadSpacing;
-          if (threadY <= wormY + wormH) {
-            simCtx.beginPath();
-            simCtx.moveTo(wormX, threadY);
-            simCtx.lineTo(wormX + wormW, threadY - 5);
-            simCtx.stroke();
-          }
-        }
-        
-        // Draw Wheel
-        simCtx.fillStyle = 'rgba(245, 158, 11, 0.2)';
-        simCtx.beginPath();
-        simCtx.arc(wheelX, cy, wheelR, 0, 2*Math.PI);
-        simCtx.fill();
-        simCtx.stroke();
-        
-        // Rotation indicator
-        const wormWheelAngle = mechanicsState.angle * 0.1;
-        simCtx.beginPath();
-        simCtx.moveTo(wheelX, cy);
-        simCtx.lineTo(wheelX + wheelR * Math.cos(wormWheelAngle), cy + wheelR * Math.sin(wormWheelAngle));
-        simCtx.stroke();
-        
-        simCtx.fillStyle = 'var(--text-primary)';
-        simCtx.font = 'bold 12px Inter';
-        simCtx.textAlign = 'center';
-        simCtx.fillText("WORM (Driver)", wormX + wormW/2, wormY - 15);
-        simCtx.fillText("WHEEL (Driven)", wheelX, cy - wheelR - 15);
-      } else if (mechanicsState.type === 'rack') {
-        // Pinion (gear wheel) moving rack (linear gear)
-        const pinR = 40;
-        const pinX = cx;
-        const pinY = cy - 20;
-        
-        const rackW = 250;
-        const rackH = 20;
-        const rackX = cx - rackW/2 + (mechanicsState.angle * 30) % 80 - 40;
-        const rackY = cy + pinR - 20;
-        
-        // Draw Pinion
-        simCtx.fillStyle = 'rgba(99, 102, 241, 0.2)';
-        simCtx.beginPath();
-        simCtx.arc(pinX, pinY, pinR, 0, 2*Math.PI);
-        simCtx.fill();
-        simCtx.stroke();
-        
-        simCtx.beginPath();
-        simCtx.moveTo(pinX, pinY);
-        simCtx.lineTo(pinX + pinR * Math.cos(mechanicsState.angle), pinY + pinR * Math.sin(mechanicsState.angle));
-        simCtx.stroke();
-        
-        // Draw Rack (horizontal sliding bar)
-        simCtx.fillStyle = 'rgba(245, 158, 11, 0.2)';
-        simCtx.fillRect(rackX, rackY, rackW, rackH);
-        simCtx.strokeRect(rackX, rackY, rackW, rackH);
-        
-        // Draw teeth on Rack
-        for (let tx = rackX; tx <= rackX + rackW; tx += 15) {
-          simCtx.beginPath();
-          simCtx.moveTo(tx, rackY);
-          simCtx.lineTo(tx + 5, rackY - 6);
-          simCtx.lineTo(tx + 10, rackY);
-          simCtx.stroke();
-        }
-        
-        simCtx.fillStyle = 'var(--text-primary)';
-        simCtx.font = 'bold 12px Inter';
-        simCtx.textAlign = 'center';
-        simCtx.fillText("PINION (Rotary)", pinX, pinY - pinR - 15);
-        simCtx.fillText("RACK (Linear)", cx, rackY + rackH + 18);
-      } else if (mechanicsState.type === 'crank') {
-        // Slider crank: piston transforming rotation to linear
-        const crankR = 40;
-        const crankX = cx - 80;
-        
-        // Pivot point of crank pin
-        const pinX = crankX + crankR * Math.cos(mechanicsState.angle);
-        const pinY = cy + crankR * Math.sin(mechanicsState.angle);
-        
-        // Piston slider position
-        const rodLength = 120;
-        // Solving triangle for sliderX: pinX + sqrt(rodLength^2 - pinY^2)
-        const dy = pinY - cy;
-        const sliderX = pinX + Math.sqrt(rodLength * rodLength - dy * dy);
-        
-        // Draw Crank Wheel
-        simCtx.fillStyle = 'rgba(99, 102, 241, 0.2)';
-        simCtx.beginPath();
-        simCtx.arc(crankX, cy, crankR, 0, 2*Math.PI);
-        simCtx.fill();
-        simCtx.stroke();
-        
-        simCtx.beginPath();
-        simCtx.moveTo(crankX, cy);
-        simCtx.lineTo(pinX, pinY);
-        simCtx.stroke();
-        
-        // Connecting Rod
-        simCtx.strokeStyle = 'var(--text-secondary)';
-        simCtx.lineWidth = 4;
-        simCtx.beginPath();
-        simCtx.moveTo(pinX, pinY);
-        simCtx.lineTo(sliderX, cy);
-        simCtx.stroke();
-        
-        // Draw Slider Piston Block
-        simCtx.fillStyle = 'rgba(245, 158, 11, 0.3)';
-        simCtx.strokeStyle = 'var(--text-primary)';
-        simCtx.lineWidth = 2;
-        simCtx.fillRect(sliderX - 25, cy - 20, 50, 40);
-        simCtx.strokeRect(sliderX - 25, cy - 20, 50, 40);
-        
-        // Piston Chamber walls
-        simCtx.strokeStyle = 'var(--text-muted)';
-        simCtx.beginPath();
-        simCtx.moveTo(cx - 30, cy - 25);
-        simCtx.lineTo(cx + 120, cy - 25);
-        simCtx.moveTo(cx - 30, cy + 25);
-        simCtx.lineTo(cx + 120, cy + 25);
-        simCtx.stroke();
-        
-        simCtx.fillStyle = 'var(--text-primary)';
-        simCtx.font = 'bold 12px Inter';
-        simCtx.textAlign = 'center';
-        simCtx.fillText("CRANK (Rotary)", crankX, cy - crankR - 15);
-        simCtx.fillText("PISTON SLIDER (Linear)", cx + 50, cy - 40);
-      }
-    }
-
-    // MENSTRUAL HORMONE TIMELINE SIMULATOR
-    function setupHormonesControls(box) {
-      box.innerHTML = `
-        <div class="control-group">
-          <div class="control-label">Menstrual Day: <span class="control-value" id="val-hormone-day">Day 14 (Ovulation)</span></div>
-          <input type="range" class="sim-slider" min="1" id="slider-hormone-day" max="28" step="1" value="14" oninput="updateHormonesSim(this.value)">
-        </div>
-        <div class="sim-result-box">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Cycle Phase:</span>
-            <span class="sim-result-val" id="res-hormone-phase" style="color:var(--color-primary);">Ovulation Phase</span>
-          </div>
-          <div class="sim-result-row" style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;">
-            <span class="sim-result-label">Ovarian Status:</span>
-            <span class="sim-result-val" id="res-hormone-ovary">Follicle ruptures, egg is released.</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Endometrium (Lining):</span>
-            <span class="sim-result-val" id="res-hormone-lining">Thick and receptive.</span>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">
-          <strong>Concept Check:</strong> Hormones control the menstrual cycle:
-          <ul style="padding-left:16px;margin-top:4px;">
-            <li><strong>FSH:</strong> Stimulates follicle growth (Days 1-13).</li>
-            <li><strong>LH:</strong> Surge triggers ovulation on Day 14.</li>
-            <li><strong>Estrogen:</strong> Thickens uterine lining (Days 5-13).</li>
-            <li><strong>Progesterone:</strong> Maintains lining (Days 15-26).</li>
-          </ul>
-        </div>
-      `;
-      hormonesState.day = 14;
-      updateHormonesSim(14);
-    }
-
-    function updateHormonesSim(val) {
-      const d = parseInt(val);
-      hormonesState.day = d;
-      
-      const label = document.getElementById('val-hormone-day');
-      const phase = document.getElementById('res-hormone-phase');
-      const ovary = document.getElementById('res-hormone-ovary');
-      const lining = document.getElementById('res-hormone-lining');
-      
-      if (d === 14) {
-        label.innerText = "Day 14 (Ovulation)";
-        phase.innerText = "Ovulation Phase";
-        phase.style.color = "var(--color-danger)";
-        ovary.innerText = "Follicle ruptures, egg is released into fallopian tube.";
-        lining.innerText = "Thick, highly vascularized.";
-      } else if (d >= 1 && d <= 5) {
-        label.innerText = `Day ${d} (Menstruation)`;
-        phase.innerText = "Menstrual Phase";
-        phase.style.color = "var(--text-muted)";
-        ovary.innerText = "New follicles begin to grow under FSH.";
-        lining.innerText = "Shedding (Bleeding occurs).";
-      } else if (d > 5 && d < 14) {
-        label.innerText = `Day ${d} (Follicular)`;
-        phase.innerText = "Follicular Phase";
-        phase.style.color = "var(--unit-living-color)";
-        ovary.innerText = "Dominant follicle grows and secretes Estrogen.";
-        lining.innerText = "Thickening / Rebuilding.";
-      } else {
-        label.innerText = `Day ${d} (Luteal)`;
-        phase.innerText = "Luteal Phase";
-        phase.style.color = "var(--color-warning)";
-        ovary.innerText = "Ruptured follicle becomes corpus luteum, secreting Progesterone.";
-        lining.innerText = "Maintained thick, preparing for implantation.";
-      }
-    }
-
-    function renderHormones() {
-      const pad = 40;
-      const w = simCanvas.width - pad * 2;
-      const h = simCanvas.height - 120;
-      const startX = pad;
-      const startY = 30;
-      
-      // Draw Grid Axes
-      simCtx.strokeStyle = 'var(--border-color)';
-      simCtx.lineWidth = 1;
-      simCtx.beginPath();
-      simCtx.moveTo(startX, startY);
-      simCtx.lineTo(startX, startY + h);
-      simCtx.lineTo(startX + w, startY + h);
-      simCtx.stroke();
-      
-      // Draw Day Ticks
-      simCtx.fillStyle = 'var(--text-muted)';
-      simCtx.font = '9px Inter';
-      simCtx.textAlign = 'center';
-      for (let day = 1; day <= 28; day++) {
-        let x = startX + ((day - 1) / 27) * w;
-        if (day === 1 || day === 5 || day === 14 || day === 21 || day === 28) {
-          simCtx.beginPath();
-          simCtx.moveTo(x, startY + h);
-          simCtx.lineTo(x, startY + h + 5);
-          simCtx.stroke();
-          simCtx.fillText(`Day ${day}`, x, startY + h + 16);
-        }
-      }
-      
-      // Draw Curves: FSH, LH, Estrogen, Progesterone
-      // Let's model curves using functions
-      const getHormoneLevels = (day) => {
-        // FSH curve
-        let fsh = 20 + 10 * Math.sin((day/10)) + (day === 14 ? 30 : 0);
-        // LH curve (huge spike at Day 14)
-        let lh = 10 + 5 * Math.sin(day/8) + (day === 14 ? 80 : (day === 13 ? 40 : (day === 15 ? 20 : 0)));
-        // Estrogen curve (peaks before ovulation, smaller peak in luteal)
-        let est = 15 + 60 * Math.exp(-Math.pow(day - 12.5, 2) / 8) + 30 * Math.exp(-Math.pow(day - 21, 2) / 16);
-        // Progesterone (peaks in luteal phase)
-        let prog = 5 + (day > 14 ? 70 * Math.exp(-Math.pow(day - 21, 2) / 12) : 0);
-        
-        return { fsh, lh, est, prog };
-      };
-      
-      const curves = [
-        { name: 'LH', color: '#ef4444', key: 'lh' },
-        { name: 'FSH', color: '#3b82f6', key: 'fsh' },
-        { name: 'Estrogen', color: '#10b981', key: 'est' },
-        { name: 'Progesterone', color: '#8b5cf6', key: 'prog' }
-      ];
-      
-      curves.forEach(curve => {
-        simCtx.strokeStyle = curve.color;
-        simCtx.lineWidth = 2.5;
-        simCtx.beginPath();
-        for (let d = 1; d <= 28; d += 0.2) {
-          let x = startX + ((d - 1) / 27) * w;
-          let level = getHormoneLevels(d)[curve.key];
-          let y = startY + h - (level / 110) * h;
-          if (d === 1) simCtx.moveTo(x, y);
-          else simCtx.lineTo(x, y);
-        }
-        simCtx.stroke();
-      });
-      
-      // Draw active Day indicator line
-      const activeX = startX + ((hormonesState.day - 1) / 27) * w;
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 2;
-      simCtx.setLineDash([4, 4]);
-      simCtx.beginPath();
-      simCtx.moveTo(activeX, startY);
-      simCtx.lineTo(activeX, startY + h);
-      simCtx.stroke();
-      simCtx.setLineDash([]);
-      
-      // Draw Legend
-      simCtx.textAlign = 'left';
-      simCtx.font = 'bold 10px Inter';
-      curves.forEach((c, idx) => {
-        let lx = startX + idx * (w/4);
-        simCtx.fillStyle = c.color;
-        simCtx.fillRect(lx, startY + h + 30, 12, 12);
-        simCtx.fillStyle = 'var(--text-primary)';
-        simCtx.fillText(c.name, lx + 18, startY + h + 40);
-      });
-    }
-
-    // DIGESTIVE SYSTEM GUIDE
-    function setupDigestiveControls(box) {
-      box.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Select Organ:</label>
-          <select class="sa-input" id="sel-digestive-organ" onchange="updateDigestiveSim('organ', this.value)" style="padding:8px 12px;width:100%;">
-            <option value="mouth">Mouth (Oral Cavity)</option>
-            <option value="esophagus">Esophagus</option>
-            <option value="stomach">Stomach</option>
-            <option value="liver">Liver & Gallbladder (Accessory)</option>
-            <option value="pancreas">Pancreas (Accessory)</option>
-            <option value="small_intestine">Small Intestine</option>
-            <option value="large_intestine">Large Intestine</option>
-          </select>
-        </div>
-        
-        <div class="control-group" style="display:flex;gap:10px;">
-          <button class="sim-launch-btn" style="flex:1;background:var(--color-success);" onclick="triggerIngestFood()">
-            <i class="fa-solid fa-cookie-bite"></i> Ingest Food Bolus
-          </button>
-        </div>
-
-        <div class="sim-result-box" id="digestive-details-box">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Organ:</span>
-            <span class="sim-result-val" id="res-digestive-name" style="color:var(--unit-living-color);text-transform:capitalize;">Mouth</span>
-          </div>
-          <div class="sim-result-row" style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;">
-            <span class="sim-result-label">Mechanical Digestion:</span>
-            <span class="sim-result-val" id="res-digestive-mech" style="font-size:12px;line-height:1.4;">Mastication (chewing) and mixing with saliva. Insignificant chemical change.</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Chemical Digestion:</span>
-            <span class="sim-result-val" id="res-digestive-chem" style="font-size:12px;line-height:1.4;">Salivary Amylase breaks down starch.</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Secretions & Enzymes:</span>
-            <span class="sim-result-val" id="res-digestive-enzymes" style="font-size:12px;color:var(--color-primary);">Amylase (pH ~7)</span>
-          </div>
-        </div>
-
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">
-          <strong>Concept Check:</strong> Mechanical digestion physically breaks food (no bond breaking), while chemical digestion uses enzymes to break molecular bonds into absorbable nutrients.
-        </div>
-      `;
-      digestiveState.selectedOrgan = 'mouth';
-      digestiveState.bolusProgress = 0;
-      digestiveState.animating = false;
-      updateDigestiveSim('organ', 'mouth');
-    }
-
-    function triggerIngestFood() {
-      if (digestiveState.animating) return;
-      digestiveState.animating = true;
-      digestiveState.bolusProgress = 0;
-    }
-
-    function updateDigestiveSim(key, val) {
-      if (key === 'organ') {
-        digestiveState.selectedOrgan = val;
-        
-        const organDetails = {
-          mouth: {
-            name: "Mouth (Oral Cavity)",
-            mech: "Mastication (chewing) breaks food into smaller pieces, increasing surface area. Deglutition (swallowing) pushes food.",
-            chem: "Saliva begins the chemical breakdown of carbohydrates.",
-            enzymes: "Salivary Amylase (pH 7)"
-          },
-          esophagus: {
-            name: "Esophagus",
-            mech: "Peristalsis (rhythmic smooth muscle contractions) moves bolus down to stomach.",
-            chem: "None (continues salivary breakdown).",
-            enzymes: "Mucus (lubricant, pH 7)"
-          },
-          stomach: {
-            name: "Stomach",
-            mech: "Churning and mixing (peristaltic waves) turn bolus into liquid chyme.",
-            chem: "Gastric juice begins protein digestion in highly acidic environment.",
-            enzymes: "Pepsin, Hydrochloric Acid (HCl) (pH 1.5 - 2.0)"
-          },
-          liver: {
-            name: "Liver & Gallbladder",
-            mech: "Bile emulsifies fats (physical subdivision of lipid droplets, similar to soap).",
-            chem: "None directly (but essential helper).",
-            enzymes: "Bile salts (pH 7 - 8)"
-          },
-          pancreas: {
-            name: "Pancreas",
-            mech: "None directly. Secretes alkaline juice to neutralize stomach acid.",
-            chem: "Produces juices that digest carbs, proteins, and lipids in small intestine.",
-            enzymes: "Pancreatic Amylase, Lipase, Trypsin (pH 8.0)"
-          },
-          small_intestine: {
-            name: "Small Intestine",
-            mech: "Segmentation mixes chyme. Absorption of nutrients via villi.",
-            chem: "Complete breakdown of all nutrients into glucose, amino acids, and fatty acids.",
-            enzymes: "Maltase, Peptidases, Lipase (pH 8.0)"
-          },
-          large_intestine: {
-            name: "Large Intestine",
-            mech: "Peristalsis pushes indigestible waste. Absorption of water and minerals.",
-            chem: "None (bacterial fermentation occurs).",
-            enzymes: "Mucus, Intestinal Flora (pH 7 - 8)"
-          }
-        };
-
-        const details = organDetails[val];
-        document.getElementById('res-digestive-name').innerText = details.name;
-        document.getElementById('res-digestive-mech').innerText = details.mech;
-        document.getElementById('res-digestive-chem').innerText = details.chem;
-        document.getElementById('res-digestive-enzymes').innerText = details.enzymes;
-        
-        // Also select in dropdown if changed programmatically
-        const sel = document.getElementById('sel-digestive-organ');
-        if (sel) sel.value = val;
-      }
-    }
-
-    function renderDigestive() {
-      const cx = simCanvas.width / 2;
-      const cy = simCanvas.height / 2;
-
-      // Draw schematic torso outline (simplified)
-      simCtx.strokeStyle = 'var(--border-color)';
-      simCtx.lineWidth = 2;
-      simCtx.beginPath();
-      // Draw head & shoulders
-      simCtx.moveTo(cx - 35, cy - 190);
-      simCtx.quadraticCurveTo(cx, cy - 210, cx + 35, cy - 190); // head top
-      simCtx.lineTo(cx + 35, cy - 140); // head right
-      simCtx.lineTo(cx + 80, cy - 120); // shoulder right
-      simCtx.lineTo(cx + 80, cy + 180); // body right
-      simCtx.lineTo(cx - 80, cy + 180); // body bottom to left
-      simCtx.lineTo(cx - 80, cy - 120); // body left
-      simCtx.lineTo(cx - 35, cy - 140); // shoulder left
-      simCtx.closePath();
-      simCtx.stroke();
-
-      // Esophagus tube
-      simCtx.fillStyle = 'rgba(244, 63, 94, 0.2)';
-      simCtx.fillRect(cx - 5, cy - 160, 10, 100);
-      simCtx.strokeRect(cx - 5, cy - 160, 10, 100);
-
-      // Draw Liver
-      simCtx.fillStyle = digestiveState.selectedOrgan === 'liver' ? 'rgba(185, 28, 28, 0.8)' : 'rgba(153, 27, 27, 0.4)';
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.beginPath();
-      simCtx.moveTo(cx + 10, cy - 40);
-      simCtx.lineTo(cx + 60, cy - 40);
-      simCtx.lineTo(cx + 35, cy - 15);
-      simCtx.closePath();
-      simCtx.fill();
-      simCtx.stroke();
-
-      // Draw Pancreas
-      simCtx.fillStyle = digestiveState.selectedOrgan === 'pancreas' ? 'rgba(253, 224, 71, 0.9)' : 'rgba(253, 224, 71, 0.4)';
-      simCtx.beginPath();
-      simCtx.ellipse(cx - 5, cy - 5, 20, 7, Math.PI/12, 0, 2*Math.PI);
-      simCtx.fill();
-      simCtx.stroke();
-
-      // Draw Stomach
-      simCtx.fillStyle = digestiveState.selectedOrgan === 'stomach' ? 'rgba(244, 63, 94, 0.8)' : 'rgba(244, 63, 94, 0.4)';
-      simCtx.beginPath();
-      simCtx.ellipse(cx - 20, cy - 20, 25, 15, Math.PI/6, 0, 2*Math.PI);
-      simCtx.fill();
-      simCtx.stroke();
-
-      // Draw Large Intestine (outer loop)
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.fillStyle = digestiveState.selectedOrgan === 'large_intestine' ? 'rgba(120, 53, 4, 0.8)' : 'rgba(120, 53, 4, 0.3)';
-      simCtx.lineWidth = 12;
-      simCtx.lineCap = 'round';
-      simCtx.lineJoin = 'round';
-      simCtx.beginPath();
-      simCtx.moveTo(cx - 35, cy + 90);
-      simCtx.lineTo(cx - 35, cy + 30);
-      simCtx.lineTo(cx + 35, cy + 30);
-      simCtx.lineTo(cx + 35, cy + 90);
-      simCtx.stroke();
-      simCtx.lineWidth = 2; // reset
-
-      // Draw Small Intestine (coiled inner)
-      simCtx.fillStyle = digestiveState.selectedOrgan === 'small_intestine' ? 'rgba(249, 115, 22, 0.8)' : 'rgba(249, 115, 22, 0.4)';
-      simCtx.beginPath();
-      simCtx.arc(cx, cy + 60, 24, 0, 2*Math.PI);
-      simCtx.fill();
-      simCtx.stroke();
-      simCtx.beginPath();
-      simCtx.arc(cx - 8, cy + 55, 10, 0, 2*Math.PI);
-      simCtx.arc(cx + 8, cy + 55, 10, 0, 2*Math.PI);
-      simCtx.arc(cx, cy + 68, 10, 0, 2*Math.PI);
-      simCtx.stroke();
-
-      // Draw Mouth
-      simCtx.fillStyle = digestiveState.selectedOrgan === 'mouth' ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.4)';
-      simCtx.beginPath();
-      simCtx.ellipse(cx, cy - 160, 12, 8, 0, 0, 2*Math.PI);
-      simCtx.fill();
-      simCtx.stroke();
-
-      // Draw labels
-      simCtx.fillStyle = 'var(--text-muted)';
-      simCtx.font = '600 10px Inter';
-      simCtx.textAlign = 'center';
-      simCtx.fillText("Mouth", cx + 45, cy - 160);
-      simCtx.fillText("Esophagus", cx + 50, cy - 100);
-      simCtx.fillText("Stomach", cx - 65, cy - 20);
-      simCtx.fillText("Liver", cx + 70, cy - 40);
-      simCtx.fillText("Small Intestine", cx, cy + 62);
-      simCtx.fillText("Large Intestine", cx + 80, cy + 90);
-
-      // Bolus animation
-      if (digestiveState.animating) {
-        digestiveState.bolusProgress += 0.5;
-        let bx = cx;
-        let by = cy - 160;
-        let p = digestiveState.bolusProgress;
-        let activeOrgan = 'mouth';
-
-        if (p < 20) {
-          bx = cx;
-          by = cy - 160;
-          activeOrgan = 'mouth';
-        } else if (p >= 20 && p < 50) {
-          let t = (p - 20) / 30;
-          bx = cx;
-          by = (cy - 160) + t * 100;
-          activeOrgan = 'esophagus';
-        } else if (p >= 50 && p < 100) {
-          let t = (p - 50) / 50;
-          bx = cx - 20 * Math.sin(t * Math.PI);
-          by = (cy - 60) + t * 40;
-          activeOrgan = 'stomach';
-        } else if (p >= 100 && p < 150) {
-          let t = (p - 100) / 50;
-          bx = cx + 15 * Math.cos(t * 4 * Math.PI);
-          by = cy + 45 + 15 * Math.sin(t * 4 * Math.PI) + t * 15;
-          activeOrgan = 'small_intestine';
-        } else if (p >= 150 && p < 200) {
-          let t = (p - 150) / 50;
-          if (t < 0.3) {
-            let t2 = t / 0.3;
-            bx = cx - 35;
-            by = cy + 90 - t2 * 60;
-          } else if (t >= 0.3 && t < 0.7) {
-            let t2 = (t - 0.3) / 0.4;
-            bx = cx - 35 + t2 * 70;
-            by = cy + 30;
-          } else {
-            let t2 = (t - 0.7) / 0.3;
-            bx = cx + 35;
-            by = cy + 30 + t2 * 60;
-          }
-          activeOrgan = 'large_intestine';
-        } else {
-          digestiveState.animating = false;
-          digestiveState.bolusProgress = 0;
-          activeOrgan = 'large_intestine';
-        }
-
-        simCtx.fillStyle = '#b45309';
-        simCtx.beginPath();
-        simCtx.arc(bx, by, 6, 0, 2 * Math.PI);
-        simCtx.fill();
-        simCtx.strokeStyle = '#ffffff';
-        simCtx.lineWidth = 1;
-        simCtx.stroke();
-        simCtx.lineWidth = 2; // reset
-
-        if (digestiveState.selectedOrgan !== activeOrgan) {
-          updateDigestiveSim('organ', activeOrgan);
-        }
-      }
-    }
-
-    // MUSCULOSKELETAL ELBOW JOINT
-    function setupElbowControls(box) {
-      box.innerHTML = `
-        <div class="control-group">
-          <div class="control-label">Elbow Flexion Angle: <span class="control-value" id="val-elbow-angle">90°</span></div>
-          <input type="range" class="sim-slider" min="15" max="165" step="1" value="90" oninput="updateElbowSim(this.value)">
-        </div>
-
-        <div class="sim-result-box">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Joint Action:</span>
-            <span class="sim-result-val" id="res-elbow-action" style="color:var(--unit-living-color);">Semi-flexion</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Biceps Brachii:</span>
-            <span class="sim-result-val" id="res-elbow-biceps" style="color:var(--color-success);font-weight:700;">Active (Contraction)</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Triceps Brachii:</span>
-            <span class="sim-result-val" id="res-elbow-triceps" style="color:var(--text-secondary);">Relaxed (Extended)</span>
-          </div>
-          <div class="sim-result-row" style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;">
-            <span class="sim-result-label">Lever Class:</span>
-            <span class="sim-result-val" style="color:var(--color-primary);">Class 3 Lever (Effort in Middle)</span>
-          </div>
-        </div>
-
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">
-          <strong>Concept Check:</strong> Muscles only *pull*, they cannot push. Therefore, skeletal muscles work in <strong>antagonistic pairs</strong>: to flex the elbow, the biceps contracts (shortens/bulges) while the triceps relaxes (elongates). To extend, they swap roles.
-        </div>
-      `;
-      elbowState.angle = 90;
-      updateElbowSim(90);
-    }
-
-    function updateElbowSim(val) {
-      const angle = parseInt(val);
-      elbowState.angle = angle;
-
-      document.getElementById('val-elbow-angle').innerText = `${angle}°`;
-      
-      const act = document.getElementById('res-elbow-action');
-      const bic = document.getElementById('res-elbow-biceps');
-      const tri = document.getElementById('res-elbow-triceps');
-
-      if (angle < 60) {
-        act.innerText = "Flexion (Arm bending)";
-        bic.innerText = "Contracted (Shorter & Bulging)";
-        bic.style.color = "var(--color-danger)";
-        tri.innerText = "Relaxed (Stretched)";
-        tri.style.color = "var(--text-secondary)";
-      } else if (angle > 120) {
-        act.innerText = "Extension (Arm straightening)";
-        bic.innerText = "Relaxed (Stretched)";
-        bic.style.color = "var(--text-secondary)";
-        tri.innerText = "Contracted (Shorter)";
-        tri.style.color = "var(--color-danger)";
-      } else {
-        act.innerText = "Neutral (Intermediate)";
-        bic.innerText = "Partial Tension";
-        bic.style.color = "var(--color-warning)";
-        tri.innerText = "Partial Tension";
-        tri.style.color = "var(--color-warning)";
-      }
-    }
-
-    function renderElbow() {
-      const cx = simCanvas.width / 2;
-      const cy = simCanvas.height / 2;
-
-      const ex = cx - 60;
-      const ey = cy + 20;
-
-      const humerusLen = 130;
-      const hx = ex;
-      const hy = ey - humerusLen;
-
-      const forearmLen = 140;
-      const rad = (elbowState.angle * Math.PI) / 180;
-      const fx = ex + forearmLen * Math.cos(-rad);
-      const fy = ey + forearmLen * Math.sin(-rad);
-
-      const sx = hx - 20;
-      const sy = hy;
-
-      const bix = ex + 30 * Math.cos(-rad);
-      const biy = ey + 30 * Math.sin(-rad);
-
-      const tix = ex - 12 * Math.cos(-rad);
-      const tiy = ey - 12 * Math.sin(-rad);
-      
-      const stx = hx + 15;
-      const sty = hy + 10;
-
-      const flexT = (165 - elbowState.angle) / 150;
-      const bicepsWidth = 12 + flexT * 26;
-      const bicMidX = (sx + bix) / 2 - bicepsWidth;
-      const bicMidY = (sy + biy) / 2;
-
-      simCtx.fillStyle = 'rgba(239, 68, 68, 0.7)';
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 1.5;
-      
-      simCtx.beginPath();
-      simCtx.moveTo(sx, sy);
-      simCtx.quadraticCurveTo(bicMidX - bicepsWidth/2, bicMidY, bix, biy);
-      simCtx.quadraticCurveTo(bicMidX + bicepsWidth/2, bicMidY, sx, sy);
-      simCtx.closePath();
-      simCtx.fill();
-      simCtx.stroke();
-
-      const tricepsWidth = 12 + (1 - flexT) * 20;
-      const triMidX = (stx + tix) / 2 + tricepsWidth;
-      const triMidY = (sty + tiy) / 2;
-
-      simCtx.fillStyle = 'rgba(239, 68, 68, 0.7)';
-      simCtx.beginPath();
-      simCtx.moveTo(stx, sty);
-      simCtx.quadraticCurveTo(triMidX + tricepsWidth/2, triMidY, tix, tiy);
-      simCtx.quadraticCurveTo(triMidX - tricepsWidth/2, triMidY, stx, sty);
-      simCtx.closePath();
-      simCtx.fill();
-      simCtx.stroke();
-
-      simCtx.strokeStyle = '#e2e8f0';
-      simCtx.lineWidth = 4;
-      simCtx.beginPath();
-      simCtx.moveTo((sx+bix)/2 - bicepsWidth/2, (sy+biy)/2);
-      simCtx.lineTo(bix, biy);
-      simCtx.moveTo((sx+bix)/2 + bicepsWidth/2, (sy+biy)/2);
-      simCtx.lineTo(sx, sy);
-      simCtx.moveTo((stx+tix)/2 + tricepsWidth/2, (sty+tiy)/2);
-      simCtx.lineTo(tix, tiy);
-      simCtx.stroke();
-
-      simCtx.strokeStyle = '#f8fafc';
-      simCtx.fillStyle = '#e2e8f0';
-      simCtx.lineWidth = 14;
-      simCtx.lineCap = 'round';
-
-      simCtx.beginPath();
-      simCtx.moveTo(hx, hy);
-      simCtx.lineTo(ex, ey);
-      simCtx.stroke();
-
-      simCtx.beginPath();
-      simCtx.moveTo(ex, ey);
-      simCtx.lineTo(fx, fy);
-      simCtx.stroke();
-      
-      simCtx.lineWidth = 6;
-      simCtx.strokeStyle = '#cbd5e1';
-      simCtx.beginPath();
-      simCtx.moveTo(ex, ey + 6);
-      simCtx.lineTo(fx, fy + 6);
-      simCtx.stroke();
-
-      simCtx.fillStyle = 'var(--text-primary)';
-      simCtx.beginPath();
-      simCtx.arc(ex, ey, 8, 0, 2*Math.PI);
-      simCtx.fill();
-      simCtx.strokeStyle = '#ffffff';
-      simCtx.lineWidth = 2;
-      simCtx.stroke();
-
-      simCtx.fillStyle = '#cbd5e1';
-      simCtx.beginPath();
-      simCtx.arc(fx, fy, 14, 0, 2*Math.PI);
-      simCtx.fill();
-      simCtx.stroke();
-
-      simCtx.fillStyle = 'var(--text-primary)';
-      simCtx.font = '700 11px Inter';
-      simCtx.textAlign = 'center';
-      simCtx.fillText("HUMERUS", hx - 35, hy + 50);
-      simCtx.fillText("BICEPS (Flexor)", sx - 35, sy + humerusLen/2);
-      simCtx.fillText("TRICEPS (Extensor)", stx + 45, sty + humerusLen/2);
-      simCtx.fillText("FOREARM (Radius/Ulna)", (ex+fx)/2, (ey+fy)/2 - 18);
-      
-      simCtx.strokeStyle = '#ef4444';
-      simCtx.lineWidth = 2;
-      if (elbowState.angle < 90) {
-        drawArrow(simCtx, bix, biy, bix - 20, biy - 30);
-      } else if (elbowState.angle > 90) {
-        drawArrow(simCtx, tix, tiy, tix + 15, tiy - 25);
-      }
-    }
-
-    function drawArrow(ctx, fromx, fromy, tox, toy) {
-      const headlen = 8;
-      const angle = Math.atan2(toy-fromy,tox-fromx);
-      ctx.beginPath();
-      ctx.moveTo(fromx, fromy);
-      ctx.lineTo(tox, toy);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(tox, toy);
-      ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-      ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
-      ctx.closePath();
-      ctx.fillStyle = '#ef4444';
-      ctx.fill();
-    }
-
-    // GEOLOGICAL TIME SCALE
-    function setupGeoscaleControls(box) {
-      box.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Geological Era:</label>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <button class="filter-tab active" id="btn-era-cenozoic" onclick="updateGeoscaleSim('cenozoic')" style="text-align:left;justify-content:flex-start;padding:10px 14px;width:100%;">
-              <strong>Cenozoic Era</strong> (66 Ma - Present)
-            </button>
-            <button class="filter-tab" id="btn-era-mesozoic" onclick="updateGeoscaleSim('mesozoic')" style="text-align:left;justify-content:flex-start;padding:10px 14px;width:100%;">
-              <strong>Mesozoic Era</strong> (252 - 66 Ma)
-            </button>
-            <button class="filter-tab" id="btn-era-paleozoic" onclick="updateGeoscaleSim('paleozoic')" style="text-align:left;justify-content:flex-start;padding:10px 14px;width:100%;">
-              <strong>Paleozoic Era</strong> (541 - 252 Ma)
-            </button>
-            <button class="filter-tab" id="btn-era-precambrian" onclick="updateGeoscaleSim('precambrian')" style="text-align:left;justify-content:flex-start;padding:10px 14px;width:100%;">
-              <strong>Precambrian Era</strong> (4600 - 541 Ma)
-            </button>
-          </div>
-        </div>
-
-        <div class="sim-result-box" style="margin-top:10px;">
-          <div class="sim-result-row">
-            <span class="sim-result-label">Era:</span>
-            <span class="sim-result-val" id="res-era-name" style="color:var(--unit-earth-color);">Cenozoic (Modern Life)</span>
-          </div>
-          <div class="sim-result-row" style="border-top:1px dashed var(--border-color);margin-top:8px;padding-top:8px;">
-            <span class="sim-result-label">Dominant Life:</span>
-            <span class="sim-result-val" id="res-era-life" style="font-size:12px;line-height:1.4;">Mammals, birds, hominids, and flowering plants.</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Major Event:</span>
-            <span class="sim-result-val" id="res-era-events" style="font-size:12px;line-height:1.4;">Ice ages, rise of humans.</span>
-          </div>
-          <div class="sim-result-row">
-            <span class="sim-result-label">Key Index Fossils:</span>
-            <span class="sim-result-val" id="res-era-fossils" style="font-size:12px;color:var(--color-primary);">Mammoths, early horses, human tools.</span>
-          </div>
-        </div>
-
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">
-          <strong>Superposition Principle:</strong> Sedimentary rock layers (stratigraphic layers) are deposited sequentially. The oldest layer is at the bottom, and the newest is at the top. Fossils found in lower layers are older.
-        </div>
-      `;
-      geoscaleState.selectedEra = 'cenozoic';
-      updateGeoscaleSim('cenozoic');
-    }
-
-    function updateGeoscaleSim(era) {
-      geoscaleState.selectedEra = era;
-
-      const eras = ['cenozoic', 'mesozoic', 'paleozoic', 'precambrian'];
-      eras.forEach(e => {
-        const btn = document.getElementById(`btn-era-${e}`);
-        if (btn) {
-          if (e === era) btn.classList.add('active');
-          else btn.classList.remove('active');
-        }
-      });
-
-      const details = {
-        cenozoic: {
-          name: "Cenozoic Era (Age of Mammals)",
-          life: "Mammals (mammoths, saber-toothed cats), birds, hominids (early humans), angiosperms (flowering plants).",
-          events: "Continents drift to current positions. Ice ages shape the landscape. Rapid diversification of mammals after dinosaur extinction.",
-          fossils: "Mammoth teeth, early horse teeth, hominid skeletal remains."
-        },
-        mesozoic: {
-          name: "Mesozoic Era (Age of Dinosaurs)",
-          life: "Dinosaurs (T-Rex, Triceratops), pterosaurs, marine reptiles (plesiosaurs), early birds, gymnosperms (conifers).",
-          events: "Pangea supercontinent breaks apart. Ends with the Cretaceous-Paleogene (K-Pg) asteroid impact extinction (66 Ma).",
-          fossils: "Dinosaur bones, Tyrannosaurus teeth, Ammonites (spiral shells)."
-        },
-        paleozoic: {
-          name: "Paleozoic Era (Ancient Life)",
-          life: "Trilobites, brachiopods, early fish, amphibians, first land plants, giant insects, early reptiles.",
-          events: "Cambrian Explosion (rapid life expansion). Ends with the Permian Mass Extinction (Great Dying, 252 Ma) where 96% of marine species vanished.",
-          fossils: "Trilobite prints, Brachiopod shells, Fern imprints, primitive fish scales."
-        },
-        precambrian: {
-          name: "Precambrian Era (Primitive Earth)",
-          life: "Stromatolites (cyanobacteria), single-celled organisms, soft-bodied Ediacaran fauna.",
-          events: "Formation of Earth (4.6 Ga). Oxygenation of atmosphere (Great Oxidation Event). Longest era, covering 88% of Earth's history.",
-          fossils: "Stromatolite mounds, microscopic algae prints, soft-body impressions."
-        }
-      };
-
-      const d = details[era];
-      document.getElementById('res-era-name').innerText = d.name;
-      document.getElementById('res-era-life').innerText = d.life;
-      document.getElementById('res-era-events').innerText = d.events;
-      document.getElementById('res-era-fossils').innerText = d.fossils;
-    }
-
-    function renderGeoscale() {
-      const cx = simCanvas.width / 2;
-      const cy = simCanvas.height / 2;
-
-      const colW = 160;
-      const colX = cx - colW / 2;
-      const startY = cy - 110;
-      const layerH = 55;
-
-      const layers = [
-        { key: 'cenozoic', color: 'rgba(217, 119, 6, 0.25)', border: 'rgba(217, 119, 6, 0.8)', name: 'Cenozoic (Top)', label: '66 Ma - Present' },
-        { key: 'mesozoic', color: 'rgba(245, 158, 11, 0.2)', border: 'rgba(245, 158, 11, 0.8)', name: 'Mesozoic', label: '252 - 66 Ma' },
-        { key: 'paleozoic', color: 'rgba(51, 65, 85, 0.15)', border: 'rgba(51, 65, 85, 0.8)', name: 'Paleozoic', label: '541 - 252 Ma' },
-        { key: 'precambrian', color: 'rgba(100, 116, 139, 0.3)', border: 'rgba(100, 116, 139, 0.8)', name: 'Precambrian (Bottom)', label: '4.6 Ga - 541 Ma' }
-      ];
-
-      layers.forEach((layer, idx) => {
-        const y = startY + idx * layerH;
-        const isSelected = geoscaleState.selectedEra === layer.key;
-        
-        simCtx.fillStyle = layer.color;
-        if (isSelected) {
-          simCtx.fillStyle = layer.color.replace('0.25', '0.6').replace('0.2', '0.5').replace('0.15', '0.45').replace('0.3', '0.65');
-        }
-        simCtx.fillRect(colX, y, colW, layerH);
-        
-        simCtx.strokeStyle = isSelected ? 'var(--color-primary)' : layer.border;
-        simCtx.lineWidth = isSelected ? 4 : 2;
-        simCtx.strokeRect(colX, y, colW, layerH);
-        
-        simCtx.fillStyle = isSelected ? 'var(--text-primary)' : 'var(--text-secondary)';
-        simCtx.font = isSelected ? 'bold 11px Inter' : '10px Inter';
-        simCtx.textAlign = 'center';
-        simCtx.fillText(layer.name, cx, y + layerH / 2 - 2);
-        simCtx.font = '8px Inter';
-        simCtx.fillStyle = 'var(--text-muted)';
-        simCtx.fillText(layer.label, cx, y + layerH / 2 + 10);
-
-        simCtx.lineWidth = 1.5;
-        simCtx.strokeStyle = 'rgba(0,0,0,0.3)';
-        
-        if (layer.key === 'cenozoic') {
-          simCtx.beginPath();
-          simCtx.arc(colX + 30, y + 25, 4, 0, 2*Math.PI);
-          simCtx.arc(colX + 30, y + 33, 4, 0, 2*Math.PI);
-          simCtx.arc(colX + 45, y + 25, 4, 0, 2*Math.PI);
-          simCtx.arc(colX + 45, y + 33, 4, 0, 2*Math.PI);
-          simCtx.moveTo(colX + 30, y + 29);
-          simCtx.lineTo(colX + 45, y + 29);
-          simCtx.stroke();
-        } else if (layer.key === 'mesozoic') {
-          simCtx.beginPath();
-          let ax = colX + 35, ay = y + layerH / 2;
-          for (let a = 0; a < 12; a += 0.2) {
-            let r = a * 1.2;
-            let px = ax + r * Math.cos(a);
-            let py = ay + r * Math.sin(a);
-            if (a === 0) simCtx.moveTo(px, py);
-            else simCtx.lineTo(px, py);
-          }
-          simCtx.stroke();
-        } else if (layer.key === 'paleozoic') {
-          let tx = colX + 35, ty = y + layerH / 2;
-          simCtx.beginPath();
-          simCtx.ellipse(tx, ty, 8, 12, 0, 0, 2*Math.PI);
-          simCtx.stroke();
-          simCtx.beginPath();
-          simCtx.moveTo(tx - 7, ty - 4); simCtx.lineTo(tx + 7, ty - 4);
-          simCtx.moveTo(tx - 8, ty);     simCtx.lineTo(tx + 8, ty);
-          simCtx.moveTo(tx - 7, ty + 4); simCtx.lineTo(tx + 7, ty + 4);
-          simCtx.stroke();
-        } else if (layer.key === 'precambrian') {
-          let sx = colX + 35, sy = y + layerH - 5;
-          simCtx.beginPath();
-          simCtx.arc(sx, sy, 6, Math.PI, 2*Math.PI);
-          simCtx.stroke();
-          simCtx.beginPath();
-          simCtx.arc(sx, sy, 12, Math.PI, 2*Math.PI);
-          simCtx.stroke();
-        }
-      });
-
-      simCtx.strokeStyle = 'rgba(0,0,0,0.06)';
-      simCtx.fillStyle = 'rgba(0,0,0,0.02)';
-      simCtx.beginPath();
-      simCtx.moveTo(0, startY - 20);
-      simCtx.lineTo(colX - 15, startY + 10);
-      simCtx.lineTo(colX - 10, startY + layerH * 4);
-      simCtx.lineTo(0, startY + layerH * 4);
-      simCtx.closePath();
-      simCtx.fill();
-      simCtx.stroke();
-
-      simCtx.beginPath();
-      simCtx.moveTo(simCanvas.width, startY - 20);
-      simCtx.lineTo(colX + colW + 15, startY + 10);
-      simCtx.lineTo(colX + colW + 10, startY + layerH * 4);
-      simCtx.lineTo(simCanvas.width, startY + layerH * 4);
-      simCtx.closePath();
-      simCtx.fill();
-      simCtx.stroke();
-
-      simCtx.strokeStyle = 'var(--text-primary)';
-      simCtx.lineWidth = 2.5;
-      const arrowX = colX - 45;
-      simCtx.beginPath();
-      simCtx.moveTo(arrowX, startY + layerH * 4 - 15);
-      simCtx.lineTo(arrowX, startY + 15);
-      simCtx.stroke();
-      
-      simCtx.beginPath();
-      simCtx.moveTo(arrowX, startY + 15);
-      simCtx.lineTo(arrowX - 5, startY + 23);
-      simCtx.lineTo(arrowX + 5, startY + 23);
-      simCtx.closePath();
-      simCtx.fillStyle = 'var(--text-primary)';
-      simCtx.fill();
-
-      simCtx.fillStyle = 'var(--text-primary)';
-      simCtx.font = 'bold 9px Inter';
-      simCtx.textAlign = 'right';
-      simCtx.fillText("NEWER", arrowX - 8, startY + 24);
-      simCtx.fillText("OLDER", arrowX - 8, startY + layerH * 4 - 12);
-    }
-
-    // INLINE SIMULATORS BOOTSTRAPPING
-    function initInlineSimulator(labType) {
-      const wrapper = document.getElementById('inline-canvas-wrapper');
-      const canvas = document.getElementById('inline-sim-canvas');
-      const controls = document.getElementById('inline-sim-controls');
-      
-      if (!canvas) return;
-      
-      // Resize to wrapper size
-      const rect = wrapper.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-      
-      const ctx = canvas.getContext('2d');
-      
-      // We will render a simplified animated preview of the active lab
-      // density: draw block dropping in beaker
-      // concentration: draw beaker and color density
-      // waves: draw oscillating wave
-      // refraction: draw light ray bending
-      // mechanics: draw rotating gears
-      // hormones: draw hormone timeline
-      let frame = 0;
-      
-      const inlineLoop = () => {
-        if (!document.getElementById('inline-sim-canvas')) return; // exit if loaded another section
-        frame++;
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
-        
-        if (labType === 'density') {
-          // Beaker and block dropping
-          ctx.fillStyle = 'rgba(14, 165, 233, 0.3)';
-          ctx.fillRect(cx - 60, cy - 20, 120, 90);
-          
-          let y = cy - 60 + (frame % 100) * 1.2;
-          if (y > cy + 40) y = cy + 40; // hit bottom
-          
-          ctx.fillStyle = '#64748b';
-          ctx.fillRect(cx - 20, y, 40, 40);
-          ctx.strokeRect(cx - 20, y, 40, 40);
-          
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(cx - 65, cy - 40);
-          ctx.lineTo(cx - 65, cy + 70);
-          ctx.lineTo(cx + 65, cy + 70);
-          ctx.lineTo(cx + 65, cy - 40);
-          ctx.stroke();
-        }
-        else if (labType === 'concentration') {
-          // Solute dissolving
-          ctx.fillStyle = `rgba(185, 28, 28, ${0.2 + 0.5 * Math.sin(frame/40)})`;
-          ctx.fillRect(cx - 60, cy - 30, 120, 80);
-          
-          ctx.strokeStyle = '#000000';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(cx - 65, cy - 40);
-          ctx.lineTo(cx - 65, cy + 50);
-          ctx.lineTo(cx + 65, cy + 50);
-          ctx.lineTo(cx + 65, cy - 40);
-          ctx.stroke();
-        }
-        else if (labType === 'waves') {
-          // Oscillating wave
-          ctx.strokeStyle = 'var(--color-primary)';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          for (let x = 20; x < canvas.width - 20; x++) {
-            let y = cy + 20 * Math.sin(x/30 - frame * 0.1);
-            if (x === 20) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.stroke();
-        }
-        else if (labType === 'refraction') {
-          // Laser beam refracting
-          ctx.fillStyle = 'rgba(186, 230, 253, 0.3)';
-          ctx.fillRect(0, cy, canvas.width, cy);
-          
-          ctx.strokeStyle = '#000000';
-          ctx.beginPath();
-          ctx.moveTo(0, cy);
-          ctx.lineTo(canvas.width, cy);
-          ctx.stroke();
-          
-          // Incident ray
-          ctx.strokeStyle = '#ef4444';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(cx - 80, cy - 80);
-          ctx.lineTo(cx, cy);
-          // Refracted ray
-          ctx.lineTo(cx + 50, cy + 80);
-          ctx.stroke();
-        }
-        else if (labType === 'mechanics') {
-          // Two rotating gears
-          let a1 = frame * 0.03;
-          let a2 = -frame * 0.03;
-          
-          // Gear 1
-          ctx.fillStyle = 'rgba(99, 102, 241, 0.2)';
-          ctx.strokeStyle = 'var(--text-primary)';
-          ctx.beginPath();
-          ctx.arc(cx - 40, cy, 30, 0, 2*Math.PI);
-          ctx.fill();
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(cx - 40, cy);
-          ctx.lineTo(cx - 40 + 30 * Math.cos(a1), cy + 30 * Math.sin(a1));
-          ctx.stroke();
-          ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
-          ctx.beginPath();
-          ctx.arc(cx + 40, cy, 30, 0, 2*Math.PI);
-          ctx.fill();
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(cx + 40, cy);
-          ctx.lineTo(cx + 40 + 30 * Math.cos(a2), cy + 30 * Math.sin(a2));
-          ctx.stroke();
-        }
-        else if (labType === 'hormones') {
-          ctx.strokeStyle = '#ef4444';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          for (let x = 10; x < canvas.width - 20; x++) {
-            let t = (x - 10) / (canvas.width - 20);
-            let y = cy + 20 - 30 * Math.exp(-Math.pow(t - 0.5, 2) / 0.01);
-            if (x === 10) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.stroke();
-          let activeX = 10 + ((frame / 3) % 100) * 0.01 * (canvas.width - 20);
-          ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-          ctx.setLineDash([3, 3]);
-          ctx.beginPath();
-          ctx.moveTo(activeX, cy - 30);
-          ctx.lineTo(activeX, cy + 30);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
-        else if (labType === 'digestive') {
-          ctx.strokeStyle = '#cbd5e1';
-          ctx.strokeRect(cx - 30, cy - 60, 60, 120);
-          ctx.fillStyle = '#b45309';
-          let y = cy - 50 + (frame % 80) * 1.2;
-          ctx.beginPath();
-          ctx.arc(cx, y, 4, 0, 2*Math.PI);
-          ctx.fill();
-          ctx.fillStyle = 'rgba(244, 63, 94, 0.4)';
-          ctx.beginPath();
-          ctx.arc(cx - 8, cy - 10, 12, 0, 2*Math.PI);
-          ctx.fill();
-        }
-        else if (labType === 'elbow') {
-          let a = 90 + 50 * Math.sin(frame * 0.05);
-          let rad = a * Math.PI / 180;
-          let ex = cx - 20, ey = cy + 20;
-          let hx = ex, hy = ey - 50;
-          let fx = ex + 60 * Math.cos(-rad), fy = ey + 60 * Math.sin(-rad);
-          ctx.strokeStyle = '#e2e8f0';
-          ctx.lineWidth = 8;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.moveTo(hx, hy); ctx.lineTo(ex, ey);
-          ctx.moveTo(ex, ey); ctx.lineTo(fx, fy);
-          ctx.stroke();
-          ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
-          ctx.lineWidth = 6 + 8 * (1 - (a-40)/140);
-          ctx.beginPath();
-          ctx.moveTo(hx, hy + 10);
-          ctx.lineTo(ex + 15 * Math.cos(-rad), ey + 15 * Math.sin(-rad));
-          ctx.stroke();
-          ctx.lineWidth = 2;
-        }
-        else if (labType === 'geoscale') {
-          const blockW = 80;
-          const blockH = 22;
-          const startY = cy - 44;
-          const colors = [
-            'rgba(217, 119, 6, 0.4)',
-            'rgba(245, 158, 11, 0.4)',
-            'rgba(51, 65, 85, 0.3)',
-            'rgba(100, 116, 139, 0.4)'
-          ];
-          const labels = ['Cenozoic', 'Mesozoic', 'Paleozoic', 'Precambrian'];
-          for (let i = 0; i < 4; i++) {
-            ctx.fillStyle = colors[i];
-            ctx.fillRect(cx - blockW/2, startY + i * blockH, blockW, blockH);
-            ctx.strokeStyle = '#cbd5e1';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(cx - blockW/2, startY + i * blockH, blockW, blockH);
-            ctx.fillStyle = 'var(--text-primary)';
-            ctx.font = '8px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillText(labels[i], cx, startY + i * blockH + 14);
-          }
-        }
-        
-        requestAnimationFrame(inlineLoop);
-      };
-      
-      inlineLoop();
-    }
-
-    function initCanvasLoop() {
-      // Global canvas check or initialization if needed
-    }
     // IMAGE ZOOM LIGHTBOX
     function zoomImage(src, captionText) {
       const modal = document.getElementById('image-zoom-modal');
@@ -5692,6 +3425,14 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
     function closeZoomModal() {
       document.getElementById('image-zoom-modal').style.display = "none";
     }
+    // CREDITS MODAL
+    function openCreditsModal() {
+      document.getElementById('credits-modal').style.display = 'flex';
+    }
+    function closeCreditsModal() {
+      document.getElementById('credits-modal').style.display = 'none';
+    }
+
   </script>
   
   <!-- Image Zoom Modal -->
@@ -5700,5 +3441,46 @@ ho = m/V$). Drop the block into a beaker of water to test buoyancy and match wit
     <img class="zoom-content" id="zoomed-image" onclick="event.stopPropagation()">
     <div id="zoom-caption"></div>
   </div>
+  <!-- Credits Modal -->
+  <div id="credits-modal" class="credits-modal" onclick="closeCreditsModal()" style="display:none;">
+    <div class="credits-content" onclick="event.stopPropagation()">
+      <span class="close-credits" onclick="closeCreditsModal()">&times;</span>
+      <div class="credits-title">
+        <i class="fa-solid fa-graduation-cap"></i> Document Credits
+      </div>
+      <div class="credits-body">
+        <p>This study guide was developed by teachers and consultants to help students prepare for the Secondary 3 Science & Technology course exam. The production of this guide has been funded by an Anglophone community success project.</p>
+        
+        <div class="credits-section-title">Teacher Development Team</div>
+        <ul class="credits-list">
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Sharon Lamb</strong> &mdash; Lester B. Pearson School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Jen Sholzberg</strong> &mdash; Lester B. Pearson School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Victoria Beaudin</strong> &mdash; English Montreal School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Pamela Leger</strong> &mdash; English Montreal School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Nancy Lemieux</strong> &mdash; English Montreal School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Patrick Mayard</strong> &mdash; English Montreal School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Alex Pasteris</strong> &mdash; English Montreal School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Gabriel Altarac</strong> &mdash; Sir Wilfrid Laurier School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Jennifer Fernandez</strong> &mdash; Sir Wilfrid Laurier School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Erika Stanischewski</strong> &mdash; Sir Wilfrid Laurier School Board</span></li>
+          <li><i class="fa-solid fa-chalkboard-user"></i> <span><strong>Hovig Vartivarian</strong> &mdash; Sir Wilfrid Laurier School Board</span></li>
+        </ul>
+
+        <div class="credits-section-title">School Board Consultants</div>
+        <ul class="credits-list">
+          <li><i class="fa-solid fa-user-tie"></i> <span><strong>Imma Ienaro</strong> &mdash; English Montreal School Board</span></li>
+          <li><i class="fa-solid fa-user-tie"></i> <span><strong>Katherine Davey</strong> &mdash; Lester B. Pearson School Board</span></li>
+          <li><i class="fa-solid fa-user-tie"></i> <span><strong>Michael Quinn</strong> &mdash; Sir Wilfrid Laurier School Board</span></li>
+          <li><i class="fa-solid fa-user-tie"></i> <span><strong>Sam Altarac-Hofmann</strong> &mdash; Sir Wilfrid Laurier School Board</span></li>
+        </ul>
+
+        <div class="credits-section-title">Special Contributions</div>
+        <p style="margin:0;font-size:13px;">Many thanks to the members of the STIC team (<strong>Phil Ritchie</strong> and <strong>Jan Novak</strong>) for their contributions to the Technological World section.</p>
+        <p style="margin:4px 0 0;font-size:13px;">Many thanks also to <strong>Julie Phenix</strong>, <strong>Canjita Gomes-Fernandes</strong> and <strong>Amanda Wilkins</strong> for their help with the graphics and text formatting of this document.</p>
+        <p style="margin:4px 0 0;font-size:13px;">Finally, many thanks also to <strong>Christie Brown</strong> and <strong>Franca Redivo</strong> for facilitating this project.</p>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
