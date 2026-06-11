@@ -269,6 +269,7 @@
       border-radius: var(--radius-md);
       overflow: hidden;
       transition: border-color var(--transition-fast);
+      flex-shrink: 0;
     }
 
     .unit-accordion-header {
@@ -303,8 +304,8 @@
     }
 
     .unit-accordion-item.open .unit-accordion-content {
-      max-height: 350px;
-      overflow-y: auto;
+      max-height: 1000px;
+      overflow-y: visible;
     }
 
     .unit-accordion-item.open .chevron {
@@ -1979,7 +1980,49 @@
     .close-credits:hover {
       color: var(--text-primary);
     }
-  </style>
+  
+    /* CONCEPTS BOX (I CAN STATEMENTS) PREMIUM OVERRIDES */
+    .outcomes-container {
+      display: flex !important;
+      flex-direction: column !important;
+      flex-wrap: nowrap !important;
+      gap: 10px !important;
+      margin-top: 16px !important;
+      background: var(--bg-secondary, #f8fafc) !important;
+      border: 1px solid var(--border-color, #e2e8f0) !important;
+      border-radius: var(--radius-lg, 12px) !important;
+      padding: 16px 20px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.01) !important;
+      width: 100% !important;
+      align-items: stretch !important;
+    }
+    .concepts-box-title {
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      color: var(--color-primary, #3b82f6) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      margin-bottom: 6px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+    .concepts-list-item {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      font-size: 14px !important;
+      color: var(--text-primary, #0f172a) !important;
+      line-height: 1.5 !important;
+      text-align: left !important;
+    }
+    .concepts-list-item i {
+      color: var(--color-success, #10b981) !important;
+      margin-top: 3px !important;
+      font-size: 13px !important;
+    }
+
+</style>
 </head>
 <body class="light-mode">
   
@@ -2420,6 +2463,29 @@
       });
     });
 
+    // ACCORDION HELPERS
+    function openAccordion(item) {
+      if (!item) return;
+      item.classList.add('open');
+      const content = item.querySelector('.unit-accordion-content');
+      if (content) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+      }
+    }
+    
+    function closeAccordion(item) {
+      if (!item) return;
+      item.classList.remove('open');
+      const content = item.querySelector('.unit-accordion-content');
+      if (content) {
+        content.style.maxHeight = '0px';
+      }
+    }
+    
+    function closeAllAccordions() {
+      document.querySelectorAll('.unit-accordion-item').forEach(closeAccordion);
+    }
+
     // ACCORDION BUILDER
     function buildAccordionMenu() {
       const accordion = document.getElementById('sidebar-unit-accordion');
@@ -2472,22 +2538,21 @@
           btn.onclick = () => loadSection(sec.idx);
           content.appendChild(btn);
         });
-        if (unit.sections.some(sec => sec.idx === currentState.activeSectionIdx)) {
-          unitItem.classList.add('open');
-        }
-        
         header.onclick = () => {
           const isOpen = unitItem.classList.contains('open');
-          // Close all
-          document.querySelectorAll('.unit-accordion-item').forEach(item => item.classList.remove('open'));
+          closeAllAccordions();
           if (!isOpen) {
-            unitItem.classList.add('open');
+            openAccordion(unitItem);
           }
         };
         
         unitItem.appendChild(header);
         unitItem.appendChild(content);
         accordion.appendChild(unitItem);
+        
+        if (unit.sections.some(sec => sec.idx === currentState.activeSectionIdx)) {
+          openAccordion(unitItem);
+        }
       });
     }
 
@@ -2550,8 +2615,8 @@
         // Make sure parent accordion is open
         const parentAccordion = activeBtn.closest('.unit-accordion-item');
         if (parentAccordion && !parentAccordion.classList.contains('open')) {
-          document.querySelectorAll('.unit-accordion-item').forEach(item => item.classList.remove('open'));
-          parentAccordion.classList.add('open');
+          closeAllAccordions();
+          openAccordion(parentAccordion);
         }
       }
       
@@ -2593,22 +2658,31 @@
       const outcomesBox = document.getElementById('study-active-outcomes');
       outcomesBox.innerHTML = '';
       if (secData.outcomes && secData.outcomes.length > 0) {
+        outcomesBox.innerHTML = `<div class="concepts-box-title"><i class="fa-solid fa-bullseye"></i> Learning Goals ("I Can" Statements)</div>`;
         secData.outcomes.forEach(outcome => {
-          const span = document.createElement('span');
-          span.className = 'outcome-tag';
-          span.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${outcome}`;
-          outcomesBox.appendChild(span);
+          const div = document.createElement('div');
+          div.className = 'concepts-list-item';
+          div.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${outcome}</span>`;
+          outcomesBox.appendChild(div);
         });
       } else {
-        outcomesBox.innerHTML = '<span class="outcome-tag"><i class="fa-solid fa-info-circle"></i> General Concept Review</span>';
+        outcomesBox.innerHTML = `<div class="concepts-box-title"><i class="fa-solid fa-bullseye"></i> Concept Goals</div>
+                                 <div class="concepts-list-item"><i class="fa-solid fa-circle-info" style="color:var(--color-primary)"></i> <span>General Concept Review</span></div>`;
       }
       
       // Inject explanation formatted content
       const explanationBox = document.getElementById('study-active-explanation');
       explanationBox.innerHTML = formatExplanationContent(secData.explanation, secData.name, secData.inlineFigures || []);
       
-      // Trigger KaTeX rendering on explanation
+      // Trigger KaTeX rendering on outcomes box and explanation
       if (window.renderMathInElement) {
+        renderMathInElement(outcomesBox, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          throwOnError: false
+        });
         renderMathInElement(explanationBox, {
           delimiters: [
             {left: '$$', right: '$$', display: true},
@@ -3178,7 +3252,9 @@
       }
       
       const secScore = currentState.quizScore[secIdx];
-      const prevAttempt = secScore.attempts[qIdx];
+      if (!secScore.attempts) {
+        secScore.attempts = {};
+      }
       
       secScore.attempts[qIdx] = isCorrect;
       
@@ -3188,7 +3264,7 @@
         if (secScore.attempts[k] === true) correct++;
       });
       secScore.correctCount = correct;
-      secScore.total = STUDY_GUIDE_DATA[secIdx].questions.length;
+      secScore.total = STUDY_GUIDE_DATA[secIdx].questions && STUDY_GUIDE_DATA[secIdx].questions.length ? STUDY_GUIDE_DATA[secIdx].questions.length : 1;
       
       localStorage.setItem('quizScore', JSON.stringify(currentState.quizScore));
     }
@@ -3349,15 +3425,20 @@
       // Flashcards Mastered
       document.getElementById('dash-flashcard-count').innerText = masteredCards.length;
       
-
-      
       // Quiz Accuracy
       let totalQuestionsAttempted = 0;
       let totalCorrectAnswers = 0;
       Object.keys(currentState.quizScore).forEach(k => {
         const score = currentState.quizScore[k];
-        totalQuestionsAttempted += Object.keys(score.attempts).length;
-        totalCorrectAnswers += score.correctCount;
+        if (score && score.attempts) {
+          totalQuestionsAttempted += Object.keys(score.attempts).length;
+          totalCorrectAnswers += score.correctCount || 0;
+        } else if (score) {
+          const correct = score.correctCount !== undefined ? score.correctCount : (score.correct !== undefined ? score.correct : 0);
+          const total = score.total || 0;
+          totalQuestionsAttempted += total;
+          totalCorrectAnswers += correct;
+        }
       });
       
       const accuracy = totalQuestionsAttempted > 0 ? Math.round((totalCorrectAnswers / totalQuestionsAttempted) * 100) : 0;
